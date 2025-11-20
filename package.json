@@ -1,0 +1,17 @@
+{
+  "name": "ruckus-1-api-workbench",
+  "version": "1.0.0",
+  "description": "Bulk operations tool for RUCKUS One network management",
+  "private": true,
+  "scripts": {
+    "setup": "bash setup.sh",
+    "backend": "cd backend && npm run dev",
+    "frontend": "cd frontend && npm run dev",
+    "build:backend": "cd backend && npm run build",
+    "build:frontend": "cd frontend && npm run build",
+    "build": "npm run build:backend && npm run build:frontend"
+  },
+  "keywords": ["ruckus", "api", "bulk", "operations", "network", "management"],
+  "author": "",
+  "license": "MIT"
+}
