@@ -52,6 +52,13 @@ export async function bulkCreateVenues(request: BulkVenueCreateRequest): Promise
   // Create session
   const sessionId = operationTracker.createSession('venue', 'create', venueNames.length);
 
+  // Pre-create all operations as "queued"
+  const operationIds: string[] = [];
+  for (const venueName of venueNames) {
+    const opId = operationTracker.addOperation(sessionId, 'venue', 'create', venueName);
+    operationIds.push(opId);
+  }
+
   // Create semaphore for concurrency control
   const semaphore = new Semaphore(request.options.maxConcurrent);
 
@@ -62,7 +69,7 @@ export async function bulkCreateVenues(request: BulkVenueCreateRequest): Promise
   }
 
   // Execute operations
-  const executeOperation = async (venueName: string, index: number) => {
+  const executeOperation = async (venueName: string, operationId: string, index: number) => {
     // Check if session is cancelled
     const currentSession = operationTracker.getSession(sessionId);
     if (currentSession?.status === 'cancelled') {
@@ -78,8 +85,6 @@ export async function bulkCreateVenues(request: BulkVenueCreateRequest): Promise
     if (index > 0 && request.options.delayMs > 0) {
       await delay(request.options.delayMs);
     }
-
-    const operationId = operationTracker.addOperation(sessionId, 'venue', 'create', venueName);
 
     try {
       await semaphore.acquire();
@@ -134,7 +139,7 @@ export async function bulkCreateVenues(request: BulkVenueCreateRequest): Promise
 
   // Execute all operations
   Promise.all(
-    venueNames.map((venueName, index) => executeOperation(venueName, index))
+    venueNames.map((venueName, index) => executeOperation(venueName, operationIds[index], index))
   ).catch(err => {
     console.error('[BulkOperationService] Error in bulk venue create:', err);
   });
@@ -150,11 +155,18 @@ export async function bulkDeleteVenues(request: BulkVenueDeleteRequest): Promise
   // Create session
   const sessionId = operationTracker.createSession('venue', 'delete', request.venueIds.length);
 
+  // Pre-create all operations as "queued"
+  const operationIds: string[] = [];
+  for (const venueId of request.venueIds) {
+    const opId = operationTracker.addOperation(sessionId, 'venue', 'delete', venueId);
+    operationIds.push(opId);
+  }
+
   // Create semaphore
   const semaphore = new Semaphore(request.options.maxConcurrent);
 
   // Execute operations
-  const executeOperation = async (venueId: string, index: number) => {
+  const executeOperation = async (venueId: string, operationId: string, index: number) => {
     const currentSession = operationTracker.getSession(sessionId);
     if (currentSession?.status === 'cancelled') {
       return;
@@ -167,8 +179,6 @@ export async function bulkDeleteVenues(request: BulkVenueDeleteRequest): Promise
     if (index > 0 && request.options.delayMs > 0) {
       await delay(request.options.delayMs);
     }
-
-    const operationId = operationTracker.addOperation(sessionId, 'venue', 'delete', venueId);
 
     try {
       await semaphore.acquire();
@@ -210,7 +220,7 @@ export async function bulkDeleteVenues(request: BulkVenueDeleteRequest): Promise
   };
 
   Promise.all(
-    request.venueIds.map((venueId, index) => executeOperation(venueId, index))
+    request.venueIds.map((venueId, index) => executeOperation(venueId, operationIds[index], index))
   ).catch(err => {
     console.error('[BulkOperationService] Error in bulk venue delete:', err);
   });
@@ -227,9 +237,17 @@ export async function bulkCreateWlans(request: BulkWlanCreateRequest): Promise<s
   const ssids = generateNames(request.ssidPrefix, request.ssidSuffix, request.count, request.startStep);
 
   const sessionId = operationTracker.createSession('wlan', 'create', names.length);
+  
+  // Pre-create all operations as "queued"
+  const operationIds: string[] = [];
+  for (let i = 0; i < names.length; i++) {
+    const opId = operationTracker.addOperation(sessionId, 'wlan', 'create', `${names[i]} (${ssids[i]})`);
+    operationIds.push(opId);
+  }
+  
   const semaphore = new Semaphore(request.options.maxConcurrent);
 
-  const executeOperation = async (name: string, ssid: string, index: number) => {
+  const executeOperation = async (name: string, ssid: string, operationId: string, index: number) => {
     const currentSession = operationTracker.getSession(sessionId);
     if (currentSession?.status === 'cancelled') {
       return;
@@ -242,8 +260,6 @@ export async function bulkCreateWlans(request: BulkWlanCreateRequest): Promise<s
     if (index > 0 && request.options.delayMs > 0) {
       await delay(request.options.delayMs);
     }
-
-    const operationId = operationTracker.addOperation(sessionId, 'wlan', 'create', `${name} (${ssid})`);
 
     try {
       await semaphore.acquire();
@@ -283,7 +299,7 @@ export async function bulkCreateWlans(request: BulkWlanCreateRequest): Promise<s
   };
 
   Promise.all(
-    names.map((name, index) => executeOperation(name, ssids[index], index))
+    names.map((name, index) => executeOperation(name, ssids[index], operationIds[index], index))
   ).catch(err => {
     console.error('[BulkOperationService] Error in bulk WLAN create:', err);
   });
@@ -297,9 +313,17 @@ export async function bulkCreateWlans(request: BulkWlanCreateRequest): Promise<s
 export async function bulkActivateWlans(request: BulkWlanActivateRequest): Promise<string> {
 
   const sessionId = operationTracker.createSession('wlan', 'activate', request.networkIds.length);
+  
+  // Pre-create all operations as "queued"
+  const operationIds: string[] = [];
+  for (const networkId of request.networkIds) {
+    const opId = operationTracker.addOperation(sessionId, 'wlan', 'activate', networkId);
+    operationIds.push(opId);
+  }
+  
   const semaphore = new Semaphore(request.options.maxConcurrent);
 
-  const executeOperation = async (networkId: string, index: number) => {
+  const executeOperation = async (networkId: string, operationId: string, index: number) => {
     const currentSession = operationTracker.getSession(sessionId);
     if (currentSession?.status === 'cancelled') {
       return;
@@ -312,8 +336,6 @@ export async function bulkActivateWlans(request: BulkWlanActivateRequest): Promi
     if (index > 0 && request.options.delayMs > 0) {
       await delay(request.options.delayMs);
     }
-
-    const operationId = operationTracker.addOperation(sessionId, 'wlan', 'activate', networkId);
 
     try {
       await semaphore.acquire();
@@ -349,7 +371,7 @@ export async function bulkActivateWlans(request: BulkWlanActivateRequest): Promi
   };
 
   Promise.all(
-    request.networkIds.map((networkId, index) => executeOperation(networkId, index))
+    request.networkIds.map((networkId, index) => executeOperation(networkId, operationIds[index], index))
   ).catch(err => {
     console.error('[BulkOperationService] Error in bulk WLAN activate:', err);
   });
@@ -363,9 +385,17 @@ export async function bulkActivateWlans(request: BulkWlanActivateRequest): Promi
 export async function bulkDeactivateWlans(request: BulkWlanDeactivateRequest): Promise<string> {
 
   const sessionId = operationTracker.createSession('wlan', 'deactivate', request.networkIds.length);
+  
+  // Pre-create all operations as "queued"
+  const operationIds: string[] = [];
+  for (const networkId of request.networkIds) {
+    const opId = operationTracker.addOperation(sessionId, 'wlan', 'deactivate', networkId);
+    operationIds.push(opId);
+  }
+  
   const semaphore = new Semaphore(request.options.maxConcurrent);
 
-  const executeOperation = async (networkId: string, index: number) => {
+  const executeOperation = async (networkId: string, operationId: string, index: number) => {
     const currentSession = operationTracker.getSession(sessionId);
     if (currentSession?.status === 'cancelled') {
       return;
@@ -378,8 +408,6 @@ export async function bulkDeactivateWlans(request: BulkWlanDeactivateRequest): P
     if (index > 0 && request.options.delayMs > 0) {
       await delay(request.options.delayMs);
     }
-
-    const operationId = operationTracker.addOperation(sessionId, 'wlan', 'deactivate', networkId);
 
     try {
       await semaphore.acquire();
@@ -414,7 +442,7 @@ export async function bulkDeactivateWlans(request: BulkWlanDeactivateRequest): P
   };
 
   Promise.all(
-    request.networkIds.map((networkId, index) => executeOperation(networkId, index))
+    request.networkIds.map((networkId, index) => executeOperation(networkId, operationIds[index], index))
   ).catch(err => {
     console.error('[BulkOperationService] Error in bulk WLAN deactivate:', err);
   });
@@ -428,9 +456,17 @@ export async function bulkDeactivateWlans(request: BulkWlanDeactivateRequest): P
 export async function bulkDeleteWlans(request: BulkWlanDeleteRequest): Promise<string> {
 
   const sessionId = operationTracker.createSession('wlan', 'delete', request.networkIds.length);
+  
+  // Pre-create all operations as "queued"
+  const operationIds: string[] = [];
+  for (const networkId of request.networkIds) {
+    const opId = operationTracker.addOperation(sessionId, 'wlan', 'delete', networkId);
+    operationIds.push(opId);
+  }
+  
   const semaphore = new Semaphore(request.options.maxConcurrent);
 
-  const executeOperation = async (networkId: string, index: number) => {
+  const executeOperation = async (networkId: string, operationId: string, index: number) => {
     const currentSession = operationTracker.getSession(sessionId);
     if (currentSession?.status === 'cancelled') {
       return;
@@ -443,8 +479,6 @@ export async function bulkDeleteWlans(request: BulkWlanDeleteRequest): Promise<s
     if (index > 0 && request.options.delayMs > 0) {
       await delay(request.options.delayMs);
     }
-
-    const operationId = operationTracker.addOperation(sessionId, 'wlan', 'delete', networkId);
 
     try {
       await semaphore.acquire();
@@ -478,7 +512,7 @@ export async function bulkDeleteWlans(request: BulkWlanDeleteRequest): Promise<s
   };
 
   Promise.all(
-    request.networkIds.map((networkId, index) => executeOperation(networkId, index))
+    request.networkIds.map((networkId, index) => executeOperation(networkId, operationIds[index], index))
   ).catch(err => {
     console.error('[BulkOperationService] Error in bulk WLAN delete:', err);
   });
@@ -495,9 +529,17 @@ export async function bulkAddAps(request: BulkApAddRequest): Promise<string> {
   const serialNumbers = generateNames(request.serialPrefix, request.serialSuffix, request.count, request.startStep);
 
   const sessionId = operationTracker.createSession('ap', 'add', names.length);
+  
+  // Pre-create all operations as "queued"
+  const operationIds: string[] = [];
+  for (let i = 0; i < names.length; i++) {
+    const opId = operationTracker.addOperation(sessionId, 'ap', 'add', `${names[i]} (${serialNumbers[i]})`);
+    operationIds.push(opId);
+  }
+  
   const semaphore = new Semaphore(request.options.maxConcurrent);
 
-  const executeOperation = async (name: string, serialNumber: string, index: number) => {
+  const executeOperation = async (name: string, serialNumber: string, operationId: string, index: number) => {
     const currentSession = operationTracker.getSession(sessionId);
     if (currentSession?.status === 'cancelled') {
       return;
@@ -510,8 +552,6 @@ export async function bulkAddAps(request: BulkApAddRequest): Promise<string> {
     if (index > 0 && request.options.delayMs > 0) {
       await delay(request.options.delayMs);
     }
-
-    const operationId = operationTracker.addOperation(sessionId, 'ap', 'add', `${name} (${serialNumber})`);
 
     try {
       await semaphore.acquire();
@@ -549,7 +589,7 @@ export async function bulkAddAps(request: BulkApAddRequest): Promise<string> {
   };
 
   Promise.all(
-    names.map((name, index) => executeOperation(name, serialNumbers[index], index))
+    names.map((name, index) => executeOperation(name, serialNumbers[index], operationIds[index], index))
   ).catch(err => {
     console.error('[BulkOperationService] Error in bulk AP add:', err);
   });
@@ -563,9 +603,17 @@ export async function bulkAddAps(request: BulkApAddRequest): Promise<string> {
 export async function bulkMoveAps(request: BulkApMoveRequest): Promise<string> {
 
   const sessionId = operationTracker.createSession('ap', 'move', request.apSerialNumbers.length);
+  
+  // Pre-create all operations as "queued"
+  const operationIds: string[] = [];
+  for (const serialNumber of request.apSerialNumbers) {
+    const opId = operationTracker.addOperation(sessionId, 'ap', 'move', serialNumber);
+    operationIds.push(opId);
+  }
+  
   const semaphore = new Semaphore(request.options.maxConcurrent);
 
-  const executeOperation = async (serialNumber: string, index: number) => {
+  const executeOperation = async (serialNumber: string, operationId: string, index: number) => {
     const currentSession = operationTracker.getSession(sessionId);
     if (currentSession?.status === 'cancelled') {
       return;
@@ -578,8 +626,6 @@ export async function bulkMoveAps(request: BulkApMoveRequest): Promise<string> {
     if (index > 0 && request.options.delayMs > 0) {
       await delay(request.options.delayMs);
     }
-
-    const operationId = operationTracker.addOperation(sessionId, 'ap', 'move', serialNumber);
 
     try {
       await semaphore.acquire();
@@ -615,7 +661,7 @@ export async function bulkMoveAps(request: BulkApMoveRequest): Promise<string> {
   };
 
   Promise.all(
-    request.apSerialNumbers.map((serialNumber, index) => executeOperation(serialNumber, index))
+    request.apSerialNumbers.map((serialNumber, index) => executeOperation(serialNumber, operationIds[index], index))
   ).catch(err => {
     console.error('[BulkOperationService] Error in bulk AP move:', err);
   });
@@ -629,9 +675,17 @@ export async function bulkMoveAps(request: BulkApMoveRequest): Promise<string> {
 export async function bulkRemoveAps(request: BulkApRemoveRequest): Promise<string> {
 
   const sessionId = operationTracker.createSession('ap', 'remove', request.apSerialNumbers.length);
+  
+  // Pre-create all operations as "queued"
+  const operationIds: string[] = [];
+  for (const serialNumber of request.apSerialNumbers) {
+    const opId = operationTracker.addOperation(sessionId, 'ap', 'remove', serialNumber);
+    operationIds.push(opId);
+  }
+  
   const semaphore = new Semaphore(request.options.maxConcurrent);
 
-  const executeOperation = async (serialNumber: string, index: number) => {
+  const executeOperation = async (serialNumber: string, operationId: string, index: number) => {
     const currentSession = operationTracker.getSession(sessionId);
     if (currentSession?.status === 'cancelled') {
       return;
@@ -644,8 +698,6 @@ export async function bulkRemoveAps(request: BulkApRemoveRequest): Promise<strin
     if (index > 0 && request.options.delayMs > 0) {
       await delay(request.options.delayMs);
     }
-
-    const operationId = operationTracker.addOperation(sessionId, 'ap', 'remove', serialNumber);
 
     try {
       await semaphore.acquire();
@@ -680,7 +732,7 @@ export async function bulkRemoveAps(request: BulkApRemoveRequest): Promise<strin
   };
 
   Promise.all(
-    request.apSerialNumbers.map((serialNumber, index) => executeOperation(serialNumber, index))
+    request.apSerialNumbers.map((serialNumber, index) => executeOperation(serialNumber, operationIds[index], index))
   ).catch(err => {
     console.error('[BulkOperationService] Error in bulk AP remove:', err);
   });

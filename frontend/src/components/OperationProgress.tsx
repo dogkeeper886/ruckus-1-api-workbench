@@ -14,7 +14,6 @@ export const OperationProgress: React.FC<Props> = ({ sessionId, onComplete }) =>
   const [isPolling, setIsPolling] = useState(true);
   const [showDebugPanel, setShowDebugPanel] = useState(false);
   const [selectedOperation, setSelectedOperation] = useState<Operation | null>(null);
-  const tableContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -32,11 +31,7 @@ export const OperationProgress: React.FC<Props> = ({ sessionId, onComplete }) =>
           setSession(sessionResp.data);
           if (sessionResp.data.status === 'completed' || sessionResp.data.status === 'cancelled') {
             setIsPolling(false);
-            // Only auto-return if there were no failures
-            // If there were failures, let user manually go back to review errors
-            if (progressResp.data && progressResp.data.failureCount === 0) {
-              onComplete?.();
-            }
+            // Don't auto-return - let user manually go back to review results
           }
         }
         if (operationsResp.success && operationsResp.data) {
@@ -54,13 +49,6 @@ export const OperationProgress: React.FC<Props> = ({ sessionId, onComplete }) =>
       return () => clearInterval(interval);
     }
   }, [sessionId, isPolling, onComplete]);
-
-  // Auto-scroll to bottom when operations update
-  useEffect(() => {
-    if (tableContainerRef.current) {
-      tableContainerRef.current.scrollTop = tableContainerRef.current.scrollHeight;
-    }
-  }, [operations]);
 
   const handlePause = async () => {
     try {
@@ -190,7 +178,7 @@ export const OperationProgress: React.FC<Props> = ({ sessionId, onComplete }) =>
         <div className="px-6 py-4 border-b">
           <h3 className="text-lg font-semibold">Operations</h3>
         </div>
-        <div ref={tableContainerRef} className="overflow-x-auto max-h-96">
+        <div className="overflow-x-auto max-h-96">
           <table className="w-full">
             <thead className="bg-gray-50 sticky top-0">
               <tr>
