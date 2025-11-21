@@ -1,4 +1,4 @@
-import { AuthTokenResponse } from '../types/ruckusApi.js';
+import { AuthTokenResponse } from '../types/ruckusApi';
 
 interface CachedToken {
   token: string;

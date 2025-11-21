@@ -1,17 +1,6 @@
 import { Semaphore } from '../utils/semaphore';
 import { operationTracker } from '../models/operationTracker';
-import {
-  createVenueWithRetry,
-  deleteVenueWithRetry,
-  createWifiNetworkWithRetry,
-  activateWifiNetworkAtVenuesWithRetry,
-  deactivateWifiNetworkAtVenuesWithRetry,
-  deleteWifiNetworkWithRetry,
-  addApToGroupWithRetry,
-  removeApWithRetry,
-  updateApWithRetrieval,
-  getRuckusJwtToken
-} from './ruckusApiService';
+import { mcpClient } from './mcpClientService';
 import {
   BulkVenueCreateRequest,
   BulkVenueDeleteRequest,
@@ -48,23 +37,9 @@ function delay(ms: number): Promise<void> {
 }
 
 /**
- * Get RUCKUS token with caching
- */
-async function getToken(): Promise<string> {
-  return await getRuckusJwtToken(
-    process.env.RUCKUS_TENANT_ID!,
-    process.env.RUCKUS_CLIENT_ID!,
-    process.env.RUCKUS_CLIENT_SECRET!,
-    process.env.RUCKUS_REGION
-  );
-}
-
-/**
  * Bulk venue create operation
  */
 export async function bulkCreateVenues(request: BulkVenueCreateRequest): Promise<string> {
-  const token = await getToken();
-  const region = process.env.RUCKUS_REGION || '';
 
   // Generate venue names
   const venueNames = generateNames(
@@ -109,31 +84,40 @@ export async function bulkCreateVenues(request: BulkVenueCreateRequest): Promise
     try {
       await semaphore.acquire();
 
-      // Update to running
+      // Capture request data
+      const requestData = {
+        name: venueName,
+        addressLine: request.addressLine,
+        city: request.city,
+        country: request.country,
+        timezone: request.timezone
+      };
+
+      // Update to running with request data
       operationTracker.updateOperation(sessionId, operationId, {
         status: 'running',
-        startTime: new Date()
+        startTime: new Date(),
+        requestData
       });
 
-      // Execute venue creation
-      const result = await createVenueWithRetry(
-        token,
-        venueName,
-        request.addressLine,
-        request.city,
-        request.country,
-        request.timezone,
-        region,
-        5, // maxRetries
-        2000 // pollIntervalMs
-      );
+      // Execute venue creation via MCP
+      const result = await mcpClient.createVenue({
+        name: venueName,
+        addressLine: request.addressLine,
+        city: request.city,
+        country: request.country,
+        timezone: request.timezone,
+        maxRetries: 5,
+        pollIntervalMs: 2000
+      });
 
-      // Update to success
+      // Update to success with response data
       operationTracker.updateOperation(sessionId, operationId, {
         status: 'success',
         endTime: new Date(),
         result: result,
-        activityId: result.activityId
+        activityId: result.activityId,
+        responseData: result
       });
 
     } catch (error: any) {
@@ -162,8 +146,6 @@ export async function bulkCreateVenues(request: BulkVenueCreateRequest): Promise
  * Bulk venue delete operation
  */
 export async function bulkDeleteVenues(request: BulkVenueDeleteRequest): Promise<string> {
-  const token = await getToken();
-  const region = process.env.RUCKUS_REGION || '';
 
   // Create session
   const sessionId = operationTracker.createSession('venue', 'delete', request.venueIds.length);
@@ -191,18 +173,29 @@ export async function bulkDeleteVenues(request: BulkVenueDeleteRequest): Promise
     try {
       await semaphore.acquire();
 
+      // Capture request data
+      const requestData = {
+        venueId
+      };
+
       operationTracker.updateOperation(sessionId, operationId, {
         status: 'running',
-        startTime: new Date()
+        startTime: new Date(),
+        requestData
       });
 
-      const result = await deleteVenueWithRetry(token, venueId, region, 5, 2000);
+      const result = await mcpClient.deleteVenue({
+        venueId,
+        maxRetries: 5,
+        pollIntervalMs: 2000
+      });
 
       operationTracker.updateOperation(sessionId, operationId, {
         status: 'success',
         endTime: new Date(),
         result: result,
-        activityId: result.activityId
+        activityId: result.activityId,
+        responseData: result
       });
 
     } catch (error: any) {
@@ -229,8 +222,6 @@ export async function bulkDeleteVenues(request: BulkVenueDeleteRequest): Promise
  * Bulk WLAN create operation
  */
 export async function bulkCreateWlans(request: BulkWlanCreateRequest): Promise<string> {
-  const token = await getToken();
-  const region = process.env.RUCKUS_REGION || '';
 
   const names = generateNames(request.namePrefix, request.nameSuffix, request.count, request.startStep);
   const ssids = generateNames(request.ssidPrefix, request.ssidSuffix, request.count, request.startStep);
@@ -262,19 +253,17 @@ export async function bulkCreateWlans(request: BulkWlanCreateRequest): Promise<s
         startTime: new Date()
       });
 
-      const result = await createWifiNetworkWithRetry(
-        token,
+      const result = await mcpClient.createWifiNetwork({
         name,
         ssid,
-        request.type,
-        request.wlanSecurity,
-        request.passphrase,
-        request.portalServiceProfileId,
-        request.vlanId,
-        region,
-        5,
-        2000
-      );
+        type: request.type as 'psk' | 'enterprise' | 'open' | 'guest',
+        wlanSecurity: request.wlanSecurity as 'WPA2Personal' | 'WPA3Personal' | 'WPA2Enterprise' | 'WPA3Enterprise' | 'Open' | 'None',
+        passphrase: request.passphrase,
+        portalServiceProfileId: request.portalServiceProfileId,
+        vlanId: request.vlanId,
+        maxRetries: 5,
+        pollIntervalMs: 2000
+      });
 
       operationTracker.updateOperation(sessionId, operationId, {
         status: 'success',
@@ -306,8 +295,6 @@ export async function bulkCreateWlans(request: BulkWlanCreateRequest): Promise<s
  * Bulk WLAN activate operation
  */
 export async function bulkActivateWlans(request: BulkWlanActivateRequest): Promise<string> {
-  const token = await getToken();
-  const region = process.env.RUCKUS_REGION || '';
 
   const sessionId = operationTracker.createSession('wlan', 'activate', request.networkIds.length);
   const semaphore = new Semaphore(request.options.maxConcurrent);
@@ -336,15 +323,13 @@ export async function bulkActivateWlans(request: BulkWlanActivateRequest): Promi
         startTime: new Date()
       });
 
-      const result = await activateWifiNetworkAtVenuesWithRetry(
-        token,
+      const result = await mcpClient.activateWifiNetworkAtVenues({
         networkId,
-        request.venueConfigs,
-        request.portalServiceProfileId,
-        region,
-        5,
-        2000
-      );
+        venueConfigs: request.venueConfigs as any,
+        portalServiceProfileId: request.portalServiceProfileId,
+        maxRetries: 5,
+        pollIntervalMs: 2000
+      });
 
       operationTracker.updateOperation(sessionId, operationId, {
         status: 'success',
@@ -376,8 +361,6 @@ export async function bulkActivateWlans(request: BulkWlanActivateRequest): Promi
  * Bulk WLAN deactivate operation
  */
 export async function bulkDeactivateWlans(request: BulkWlanDeactivateRequest): Promise<string> {
-  const token = await getToken();
-  const region = process.env.RUCKUS_REGION || '';
 
   const sessionId = operationTracker.createSession('wlan', 'deactivate', request.networkIds.length);
   const semaphore = new Semaphore(request.options.maxConcurrent);
@@ -406,14 +389,12 @@ export async function bulkDeactivateWlans(request: BulkWlanDeactivateRequest): P
         startTime: new Date()
       });
 
-      const result = await deactivateWifiNetworkAtVenuesWithRetry(
-        token,
+      const result = await mcpClient.deactivateWifiNetworkAtVenues({
         networkId,
-        request.venueIds,
-        region,
-        5,
-        2000
-      );
+        venueIds: request.venueIds,
+        maxRetries: 5,
+        pollIntervalMs: 2000
+      });
 
       operationTracker.updateOperation(sessionId, operationId, {
         status: 'success',
@@ -445,8 +426,6 @@ export async function bulkDeactivateWlans(request: BulkWlanDeactivateRequest): P
  * Bulk WLAN delete operation
  */
 export async function bulkDeleteWlans(request: BulkWlanDeleteRequest): Promise<string> {
-  const token = await getToken();
-  const region = process.env.RUCKUS_REGION || '';
 
   const sessionId = operationTracker.createSession('wlan', 'delete', request.networkIds.length);
   const semaphore = new Semaphore(request.options.maxConcurrent);
@@ -475,7 +454,11 @@ export async function bulkDeleteWlans(request: BulkWlanDeleteRequest): Promise<s
         startTime: new Date()
       });
 
-      const result = await deleteWifiNetworkWithRetry(token, networkId, region, 5, 2000);
+      const result = await mcpClient.deleteWifiNetwork({
+        networkId,
+        maxRetries: 5,
+        pollIntervalMs: 2000
+      });
 
       operationTracker.updateOperation(sessionId, operationId, {
         status: 'success',
@@ -507,8 +490,6 @@ export async function bulkDeleteWlans(request: BulkWlanDeleteRequest): Promise<s
  * Bulk AP add operation
  */
 export async function bulkAddAps(request: BulkApAddRequest): Promise<string> {
-  const token = await getToken();
-  const region = process.env.RUCKUS_REGION || '';
 
   const names = generateNames(request.namePrefix, request.nameSuffix, request.count, request.startStep);
   const serialNumbers = generateNames(request.serialPrefix, request.serialSuffix, request.count, request.startStep);
@@ -540,17 +521,15 @@ export async function bulkAddAps(request: BulkApAddRequest): Promise<string> {
         startTime: new Date()
       });
 
-      const result = await addApToGroupWithRetry(
-        token,
-        request.venueId,
-        request.apGroupId,
+      const result = await mcpClient.addApToGroup({
+        venueId: request.venueId,
+        apGroupId: request.apGroupId,
         name,
         serialNumber,
-        request.description,
-        region,
-        5,
-        2000
-      );
+        description: request.description,
+        maxRetries: 5,
+        pollIntervalMs: 2000
+      });
 
       operationTracker.updateOperation(sessionId, operationId, {
         status: 'success',
@@ -582,8 +561,6 @@ export async function bulkAddAps(request: BulkApAddRequest): Promise<string> {
  * Bulk AP move operation
  */
 export async function bulkMoveAps(request: BulkApMoveRequest): Promise<string> {
-  const token = await getToken();
-  const region = process.env.RUCKUS_REGION || '';
 
   const sessionId = operationTracker.createSession('ap', 'move', request.apSerialNumbers.length);
   const semaphore = new Semaphore(request.options.maxConcurrent);
@@ -612,17 +589,13 @@ export async function bulkMoveAps(request: BulkApMoveRequest): Promise<string> {
         startTime: new Date()
       });
 
-      const result = await updateApWithRetrieval(
-        token,
-        serialNumber,
-        {
-          venueId: request.targetVenueId,
-          apGroupId: request.targetApGroupId
-        },
-        region,
-        5,
-        2000
-      );
+      const result = await mcpClient.updateAp({
+        apSerialNumber: serialNumber,
+        venueId: request.targetVenueId,
+        apGroupId: request.targetApGroupId,
+        maxRetries: 5,
+        pollIntervalMs: 2000
+      });
 
       operationTracker.updateOperation(sessionId, operationId, {
         status: 'success',
@@ -654,8 +627,6 @@ export async function bulkMoveAps(request: BulkApMoveRequest): Promise<string> {
  * Bulk AP remove operation
  */
 export async function bulkRemoveAps(request: BulkApRemoveRequest): Promise<string> {
-  const token = await getToken();
-  const region = process.env.RUCKUS_REGION || '';
 
   const sessionId = operationTracker.createSession('ap', 'remove', request.apSerialNumbers.length);
   const semaphore = new Semaphore(request.options.maxConcurrent);
@@ -684,14 +655,12 @@ export async function bulkRemoveAps(request: BulkApRemoveRequest): Promise<strin
         startTime: new Date()
       });
 
-      const result = await removeApWithRetry(
-        token,
-        request.venueId,
-        serialNumber,
-        region,
-        5,
-        2000
-      );
+      const result = await mcpClient.removeAp({
+        venueId: request.venueId,
+        apSerialNumber: serialNumber,
+        maxRetries: 5,
+        pollIntervalMs: 2000
+      });
 
       operationTracker.updateOperation(sessionId, operationId, {
         status: 'success',

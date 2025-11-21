@@ -5,12 +5,13 @@ import bulkVenuesRouter from './routes/bulkVenues';
 import bulkWlansRouter from './routes/bulkWlans';
 import bulkApsRouter from './routes/bulkAps';
 import sessionsRouter from './routes/sessions';
+import { mcpClient } from './services/mcpClientService';
 
 // Load environment variables
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3003;
 
 // Middleware
 app.use(cors());
@@ -54,9 +55,15 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   });
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`
+// Initialize MCP client and start server
+async function startServer() {
+  try {
+    console.log('[Server] Initializing MCP client...');
+    await mcpClient.start();
+    console.log('[Server] MCP client initialized successfully');
+
+    const server = app.listen(PORT, () => {
+      console.log(`
 ╔═══════════════════════════════════════════════════════╗
 ║   RUCKUS 1 API Workbench Backend                     ║
 ║   Server running on http://localhost:${PORT}          ║
@@ -67,9 +74,11 @@ Environment:
   - RUCKUS_CLIENT_ID: ${process.env.RUCKUS_CLIENT_ID ? '✓ Set' : '✗ Not set'}
   - RUCKUS_CLIENT_SECRET: ${process.env.RUCKUS_CLIENT_SECRET ? '✓ Set' : '✗ Not set'}
   - RUCKUS_REGION: ${process.env.RUCKUS_REGION || 'global (default)'}
+  - MCP Server: ✓ Running
 
 Available endpoints:
   - GET  /health
+  - GET  /api/venues
   - POST /api/venues/bulk-create
   - POST /api/venues/bulk-delete
   - POST /api/wlans/bulk-create
@@ -80,6 +89,7 @@ Available endpoints:
   - POST /api/aps/bulk-move
   - POST /api/aps/bulk-remove
   - GET  /api/sessions
+  - GET  /api/sessions/token-stats
   - GET  /api/sessions/:sessionId
   - GET  /api/sessions/:sessionId/progress
   - GET  /api/sessions/:sessionId/operations
@@ -88,6 +98,45 @@ Available endpoints:
   - POST /api/sessions/:sessionId/cancel
   - DELETE /api/sessions/:sessionId
   `);
-});
+    });
+
+    // Graceful shutdown handler
+    const shutdown = async (signal: string) => {
+      console.log(`\n[Server] ${signal} received, shutting down gracefully...`);
+      
+      // Stop accepting new connections
+      server.close(async () => {
+        console.log('[Server] HTTP server closed');
+        
+        // Stop MCP client
+        try {
+          await mcpClient.stop();
+          console.log('[Server] MCP client stopped');
+        } catch (error) {
+          console.error('[Server] Error stopping MCP client:', error);
+        }
+        
+        process.exit(0);
+      });
+
+      // Force shutdown after 10 seconds
+      setTimeout(() => {
+        console.error('[Server] Forced shutdown after timeout');
+        process.exit(1);
+      }, 10000);
+    };
+
+    // Register shutdown handlers
+    process.on('SIGTERM', () => shutdown('SIGTERM'));
+    process.on('SIGINT', () => shutdown('SIGINT'));
+
+  } catch (error) {
+    console.error('[Server] Failed to start:', error);
+    process.exit(1);
+  }
+}
+
+// Start the server
+startServer();
 
 export default app;

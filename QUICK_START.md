@@ -30,28 +30,32 @@ RUCKUS_TENANT_ID=your-tenant-id-here
 RUCKUS_CLIENT_ID=your-client-id-here
 RUCKUS_CLIENT_SECRET=your-secret-here
 RUCKUS_REGION=us
-PORT=3001
+PORT=3003
 ```
 
 Save and exit (Ctrl+X, Y, Enter)
 
-## 3. Start Backend
+## 3. Start Services (Using Makefile - Recommended)
+
+**Option A: Clean start with Makefile**
+```bash
+# Clean up any old processes and start backend
+make backend
+```
+
+In another terminal:
+```bash
+# Start frontend
+make frontend
+```
+
+**Option B: Manual start**
 
 Terminal 1:
 ```bash
 cd backend
 npm run dev
 ```
-
-You should see:
-```
-╔═══════════════════════════════════════════════════════╗
-║   RUCKUS 1 API Workbench Backend                     ║
-║   Server running on http://localhost:3001            ║
-╚═══════════════════════════════════════════════════════╝
-```
-
-## 4. Start Frontend
 
 Terminal 2:
 ```bash
@@ -61,15 +65,33 @@ npm run dev
 
 You should see:
 ```
+╔═══════════════════════════════════════════════════════╗
+║   RUCKUS 1 API Workbench Backend                     ║
+║   Server running on http://localhost:3003            ║
+╚═══════════════════════════════════════════════════════╝
+```
+
+**Makefile Commands:**
+- `make clean` - Kill old processes
+- `make status` - Show running services
+- `make backend` - Clean + start backend
+- `make frontend` - Start frontend  
+- `make dev` - Start both (parallel)
+- `make stop` - Stop all services
+
+## 4. Verify Services Running
+
+You should see:
+```
 VITE v5.x.x  ready in xxx ms
 
-➜  Local:   http://localhost:3000/
+➜  Local:   http://localhost:3002/
 ➜  Network: use --host to expose
 ```
 
 ## 5. Open Browser
 
-Navigate to: **http://localhost:3000**
+Navigate to: **http://localhost:3002**
 
 ## 6. Your First Bulk Operation
 
@@ -118,12 +140,24 @@ Log into your RUCKUS One dashboard and verify the venues were created:
 
 ## Troubleshooting
 
+### Old processes still running
+```bash
+# Use Makefile to clean up
+make clean
+
+# Or manually check and kill
+make status
+```
+
 ### Backend won't start
 ```bash
 # Check Node.js version (should be 18+)
 node -v
 
-# Reinstall dependencies
+# Clean up old processes first
+make clean
+
+# Reinstall dependencies if needed
 cd backend
 rm -rf node_modules package-lock.json
 npm install
@@ -142,8 +176,8 @@ npm install
 - Check RUCKUS_TENANT_ID, RUCKUS_CLIENT_ID, RUCKUS_CLIENT_SECRET
 
 ### CORS errors
-- Ensure backend is running on port 3001
-- Ensure frontend is running on port 3000
+- Ensure backend is running on port 3003
+- Ensure frontend is running on port 3002
 - Check browser console for detailed errors
 
 ## Common Operations
@@ -193,8 +227,8 @@ Delay: 500ms
 ## Next Steps
 
 - Read [README.md](README.md) for detailed documentation
-- Check [PROJECT_SUMMARY.md](PROJECT_SUMMARY.md) for architecture details
-- Explore the API endpoints at http://localhost:3001/health
+- Check [PROJECT_SUMMARY.md](docs/archive/v1.0.0/PROJECT_SUMMARY.md) for architecture details
+- Explore the API endpoints at http://localhost:3003/health
 - Review backend logs for debugging
 - Check browser console for frontend errors
 

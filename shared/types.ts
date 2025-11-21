@@ -17,6 +17,8 @@ export interface Operation {
   result?: any;
   error?: string;
   activityId?: string; // RUCKUS API activity/request ID
+  requestData?: any; // The request payload sent to RUCKUS API
+  responseData?: any; // The response received from RUCKUS API
 }
 
 export interface BulkOperationRequest {

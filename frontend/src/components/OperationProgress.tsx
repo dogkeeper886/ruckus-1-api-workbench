@@ -12,6 +12,8 @@ export const OperationProgress: React.FC<Props> = ({ sessionId, onComplete }) =>
   const [session, setSession] = useState<BulkOperationSession | null>(null);
   const [operations, setOperations] = useState<Operation[]>([]);
   const [isPolling, setIsPolling] = useState(true);
+  const [showDebugPanel, setShowDebugPanel] = useState(false);
+  const [selectedOperation, setSelectedOperation] = useState<Operation | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -96,6 +98,10 @@ export const OperationProgress: React.FC<Props> = ({ sessionId, onComplete }) =>
       case 'cancelled': return 'bg-gray-100 text-gray-800';
       default: return 'bg-gray-50 text-gray-600';
     }
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
   };
 
   return (
@@ -192,7 +198,14 @@ export const OperationProgress: React.FC<Props> = ({ sessionId, onComplete }) =>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {operations.map((op) => (
-                <tr key={op.id}>
+                <tr 
+                  key={op.id}
+                  className="hover:bg-gray-50 cursor-pointer"
+                  onClick={() => {
+                    setSelectedOperation(op);
+                    setShowDebugPanel(true);
+                  }}
+                >
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {op.itemName}
                   </td>
@@ -212,6 +225,120 @@ export const OperationProgress: React.FC<Props> = ({ sessionId, onComplete }) =>
             </tbody>
           </table>
         </div>
+      </div>
+
+      {/* Debug Panel */}
+      <div className="bg-white rounded-lg shadow">
+        <button
+          onClick={() => setShowDebugPanel(!showDebugPanel)}
+          className="w-full px-6 py-4 flex justify-between items-center text-left hover:bg-gray-50"
+        >
+          <h3 className="text-lg font-semibold">Debug Information</h3>
+          <span className="text-gray-500">
+            {showDebugPanel ? '▼' : '▶'}
+          </span>
+        </button>
+        
+        {showDebugPanel && (
+          <div className="px-6 py-4 border-t space-y-4">
+            {selectedOperation ? (
+              <>
+                <div className="mb-4">
+                  <div className="flex justify-between items-center mb-2">
+                    <h4 className="font-semibold text-gray-700">Operation: {selectedOperation.itemName}</h4>
+                    <button
+                      onClick={() => setSelectedOperation(null)}
+                      className="text-sm text-blue-600 hover:text-blue-800"
+                    >
+                      Show Session Info
+                    </button>
+                  </div>
+                  <div className="text-sm text-gray-600 mb-2">
+                    Status: <span className={getStatusColor(selectedOperation.status)}>{selectedOperation.status}</span>
+                    {selectedOperation.activityId && <span className="ml-4">Activity ID: {selectedOperation.activityId}</span>}
+                  </div>
+                </div>
+
+                {/* Request Data */}
+                {selectedOperation.requestData && (
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <h5 className="font-medium text-gray-700">Request Payload</h5>
+                      <button
+                        onClick={() => copyToClipboard(JSON.stringify(selectedOperation.requestData, null, 2))}
+                        className="text-xs px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded"
+                      >
+                        Copy
+                      </button>
+                    </div>
+                    <pre className="bg-gray-50 p-4 rounded overflow-x-auto text-xs">
+                      {JSON.stringify(selectedOperation.requestData, null, 2)}
+                    </pre>
+                  </div>
+                )}
+
+                {/* Response Data */}
+                {selectedOperation.responseData && (
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <h5 className="font-medium text-gray-700">Response Data</h5>
+                      <button
+                        onClick={() => copyToClipboard(JSON.stringify(selectedOperation.responseData, null, 2))}
+                        className="text-xs px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded"
+                      >
+                        Copy
+                      </button>
+                    </div>
+                    <pre className="bg-gray-50 p-4 rounded overflow-x-auto text-xs">
+                      {JSON.stringify(selectedOperation.responseData, null, 2)}
+                    </pre>
+                  </div>
+                )}
+
+                {/* Error Details */}
+                {selectedOperation.error && (
+                  <div>
+                    <h5 className="font-medium text-red-700 mb-2">Error Details</h5>
+                    <pre className="bg-red-50 p-4 rounded overflow-x-auto text-xs text-red-800">
+                      {selectedOperation.error}
+                    </pre>
+                  </div>
+                )}
+
+                {!selectedOperation.requestData && !selectedOperation.responseData && (
+                  <div className="text-sm text-gray-500 italic">
+                    No debug data available for this operation yet.
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                {/* Session Summary */}
+                <div>
+                  <h4 className="font-semibold text-gray-700 mb-2">Session Information</h4>
+                  {session && (
+                    <div className="bg-gray-50 p-4 rounded">
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        <div><span className="font-medium">Session ID:</span> {session.sessionId}</div>
+                        <div><span className="font-medium">Type:</span> {session.type}</div>
+                        <div><span className="font-medium">Action:</span> {session.action}</div>
+                        <div><span className="font-medium">Status:</span> {session.status}</div>
+                        <div><span className="font-medium">Total Operations:</span> {session.totalCount}</div>
+                        <div><span className="font-medium">Success:</span> {session.successCount}</div>
+                        <div><span className="font-medium">Failed:</span> {session.failureCount}</div>
+                        <div><span className="font-medium">Cancelled:</span> {session.cancelledCount}</div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="text-sm text-gray-600 mt-4">
+                  Click on any operation in the table above to view its request/response details.
+                </div>
+              </>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

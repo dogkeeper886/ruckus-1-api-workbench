@@ -2,8 +2,76 @@ import { Router, Request, Response } from 'express';
 import { bulkCreateVenues, bulkDeleteVenues } from '../services/bulkOperationService';
 import { operationTracker } from '../models/operationTracker';
 import { BulkVenueCreateRequest, BulkVenueDeleteRequest } from '../../../shared/types';
+import { mcpClient } from '../services/mcpClientService';
 
 const router = Router();
+
+/**
+ * GET /api/venues/test-mcp
+ * Test MCP server connectivity
+ */
+router.get('/test-mcp', async (req: Request, res: Response) => {
+  try {
+    console.log('[Venues] Testing MCP server connectivity...');
+    
+    // Test 1: Get auth token
+    console.log('[Venues] Test 1: Getting auth token...');
+    const tokenResponse = await mcpClient.getAuthToken();
+    console.log('[Venues] Token response:', tokenResponse);
+    
+    // Test 2: Get venues
+    console.log('[Venues] Test 2: Getting venues...');
+    const venuesResponse = await mcpClient.getVenues();
+    console.log('[Venues] Venues response:', venuesResponse);
+    
+    res.json({
+      success: true,
+      data: {
+        tokenTest: {
+          success: !!tokenResponse,
+          hasToken: !!tokenResponse,
+          tokenResponse: tokenResponse
+        },
+        venuesTest: {
+          success: !!venuesResponse,
+          venueCount: venuesResponse?.data?.length || 0,
+          venuesResponse: venuesResponse
+        }
+      },
+      message: 'MCP server connectivity test completed'
+    });
+  } catch (error: any) {
+    console.error('[Venues] MCP test failed:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Internal server error',
+      stack: error.stack
+    });
+  }
+});
+
+/**
+ * GET /api/venues
+ * List all venues from RUCKUS One
+ */
+router.get('/', async (req: Request, res: Response) => {
+  try {
+    console.log('[Venues] Fetching venues via MCP...');
+    const venues = await mcpClient.getVenues();
+    
+    res.json({
+      success: true,
+      data: venues,
+      message: `Found ${venues.data?.length || 0} venues`
+    });
+  } catch (error: any) {
+    console.error('[Venues] Error fetching venues:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Internal server error'
+    });
+  }
+});
 
 /**
  * POST /api/venues/bulk-create

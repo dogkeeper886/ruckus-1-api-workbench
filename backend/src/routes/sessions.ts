@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { operationTracker } from '../models/operationTracker';
+import { tokenService } from '../services/tokenService';
 
 const router = Router();
 
@@ -16,6 +17,26 @@ router.get('/', (req: Request, res: Response) => {
     });
   } catch (error: any) {
     console.error('[Sessions] Error getting sessions:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Internal server error'
+    });
+  }
+});
+
+/**
+ * GET /api/sessions/token-stats
+ * Get token cache statistics (for debugging)
+ */
+router.get('/token-stats', (req: Request, res: Response) => {
+  try {
+    const stats = tokenService.getTokenStats();
+    res.json({
+      success: true,
+      data: stats
+    });
+  } catch (error: any) {
+    console.error('[Sessions] Error getting token stats:', error);
     res.status(500).json({
       success: false,
       error: error.message || 'Internal server error'
