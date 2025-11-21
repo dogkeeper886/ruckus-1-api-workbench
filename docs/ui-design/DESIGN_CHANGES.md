@@ -266,7 +266,18 @@ background: linear-gradient(to bottom, rgb(234, 179, 8), rgb(202, 138, 4));
 - Semantic button classes with icons (⏸ Pause, ▶ Resume, 🗑️ Clear)
 - Hover state with `.shadow-small` on inactive filters
 
-### VenuesPage.tsx & AccessPointsPage.tsx
+### AccessPointsPage.tsx
+✅ **Completed Changes:**
+- [x] Removed Model column from Access Points table
+  - Simplified table to focus on essential information
+  - Columns now: Checkbox, Serial Number, Name, Venue, AP Group, Status
+
+**Rationale:**
+- Streamlined table for better readability
+- Model information not critical for primary AP management tasks
+- Reduces visual clutter
+
+### VenuesPage.tsx
 - [ ] Update all action buttons to semantic classes
 - [ ] Apply `.shadow-medium` to table containers
 - [ ] Enhance modal dialogs with proper shadows
