@@ -134,13 +134,15 @@ export const BulkApForm: React.FC<Props> = ({ onComplete }) => {
 
   if (sessionId) {
     return (
-      <div>
-        <button
-          onClick={resetForm}
-          className="mb-4 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-        >
-          ← Back to Form
-        </button>
+      <div className="space-y-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <button
+            onClick={resetForm}
+            className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+          >
+            ← Back to Form
+          </button>
+        </div>
         <OperationProgress sessionId={sessionId} onComplete={onComplete} />
       </div>
     );
@@ -153,8 +155,14 @@ export const BulkApForm: React.FC<Props> = ({ onComplete }) => {
       <h2 className="text-2xl font-bold mb-6">Bulk AP Addition</h2>
 
       {error && (
-        <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-          {error}
+        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <span className="text-red-600 text-xl">⚠</span>
+            <div className="flex-1">
+              <h3 className="text-red-800 font-semibold">Error</h3>
+              <p className="text-red-700 text-sm mt-1">{error}</p>
+            </div>
+          </div>
         </div>
       )}
 
@@ -170,7 +178,7 @@ export const BulkApForm: React.FC<Props> = ({ onComplete }) => {
               <select
                 value={selectedVenueId}
                 onChange={(e) => setSelectedVenueId(e.target.value)}
-                className="w-full px-3 py-2 border rounded-md"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 required
                 disabled={isLoadingVenues}
               >
@@ -191,7 +199,7 @@ export const BulkApForm: React.FC<Props> = ({ onComplete }) => {
               <select
                 value={selectedApGroupId}
                 onChange={(e) => setSelectedApGroupId(e.target.value)}
-                className="w-full px-3 py-2 border rounded-md"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 required
                 disabled={!selectedVenueId || isLoadingApGroups}
               >
@@ -230,7 +238,7 @@ export const BulkApForm: React.FC<Props> = ({ onComplete }) => {
                 type="text"
                 value={namePrefix}
                 onChange={(e) => setNamePrefix(e.target.value)}
-                className="w-full px-3 py-2 border rounded-md"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 required
               />
             </div>
@@ -243,7 +251,7 @@ export const BulkApForm: React.FC<Props> = ({ onComplete }) => {
                 value={startStep}
                 onChange={(e) => setStartStep(Number(e.target.value))}
                 min="1"
-                className="w-full px-3 py-2 border rounded-md"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 required
               />
             </div>
@@ -257,7 +265,7 @@ export const BulkApForm: React.FC<Props> = ({ onComplete }) => {
                 onChange={(e) => setCount(Number(e.target.value))}
                 min="1"
                 max="1000"
-                className="w-full px-3 py-2 border rounded-md"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 required
               />
             </div>
@@ -281,7 +289,7 @@ export const BulkApForm: React.FC<Props> = ({ onComplete }) => {
                 type="text"
                 value={startSerialNumber}
                 onChange={(e) => setStartSerialNumber(e.target.value)}
-                className="w-full px-3 py-2 border rounded-md"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 required
                 placeholder="e.g., 12140300133"
               />
@@ -297,7 +305,7 @@ export const BulkApForm: React.FC<Props> = ({ onComplete }) => {
                 type="text"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full px-3 py-2 border rounded-md"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="e.g., Test APs"
               />
             </div>
@@ -323,7 +331,7 @@ export const BulkApForm: React.FC<Props> = ({ onComplete }) => {
                 onChange={(e) => setMaxConcurrent(Number(e.target.value))}
                 min="1"
                 max="20"
-                className="w-full px-3 py-2 border rounded-md"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 required
               />
             </div>
@@ -338,7 +346,7 @@ export const BulkApForm: React.FC<Props> = ({ onComplete }) => {
                 min="0"
                 max="10000"
                 step="100"
-                className="w-full px-3 py-2 border rounded-md"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 required
               />
             </div>
@@ -348,7 +356,7 @@ export const BulkApForm: React.FC<Props> = ({ onComplete }) => {
         <button
           type="submit"
           disabled={isSubmitting || !selectedVenueId || !selectedApGroupId}
-          className="w-full px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400"
+          className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-medium"
         >
           {isSubmitting ? 'Starting...' : `Add ${count} APs`}
         </button>
