@@ -3,7 +3,11 @@ import { apiService } from '../services/api';
 import { BulkVenueCreateRequest, BulkVenueDeleteRequest } from '../../../shared/types';
 import { OperationProgress } from './OperationProgress';
 
-export const BulkVenueForm: React.FC = () => {
+interface Props {
+  onComplete?: () => void;
+}
+
+export const BulkVenueForm: React.FC<Props> = ({ onComplete }) => {
   const [action, setAction] = useState<'create' | 'delete'>('create');
   const [sessionId, setSessionId] = useState<string | null>(null);
 
@@ -12,9 +16,9 @@ export const BulkVenueForm: React.FC = () => {
   const [suffix, setSuffix] = useState('');
   const [count, setCount] = useState(10);
   const [startStep, setStartStep] = useState(1);
-  const [addressLine, setAddressLine] = useState('123 Test St');
-  const [city, setCity] = useState('TestCity');
-  const [country, setCountry] = useState('US');
+  const [addressLine, setAddressLine] = useState('New York');
+  const [city, setCity] = useState('New York');
+  const [country, setCountry] = useState('United States');
   const [timezone, setTimezone] = useState('America/New_York');
 
   // Delete form state
@@ -110,7 +114,7 @@ export const BulkVenueForm: React.FC = () => {
         >
           ← Back to Form
         </button>
-        <OperationProgress sessionId={sessionId} />
+        <OperationProgress sessionId={sessionId} onComplete={onComplete} />
       </div>
     );
   }

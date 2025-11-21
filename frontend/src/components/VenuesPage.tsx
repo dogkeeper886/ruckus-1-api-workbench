@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { apiService } from '../services/api';
-import { Venue } from '../../../shared/types';
+import { Venue, BulkVenueDeleteRequest } from '../../../shared/types';
 import { ApiLogsPanel } from './ApiLogsPanel';
+import { OperationProgress } from './OperationProgress';
+import { BulkVenueForm } from './BulkVenueForm';
 
 export const VenuesPage: React.FC = () => {
   const [venues, setVenues] = useState<Venue[]>([]);
@@ -9,6 +11,22 @@ export const VenuesPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   const [isRefreshing, setIsRefreshing] = useState(false);
+  
+  // Selection state
+  const [selectedVenueIds, setSelectedVenueIds] = useState<Set<string>>(new Set());
+  
+  // Delete dialog state
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteMaxConcurrent, setDeleteMaxConcurrent] = useState(5);
+  const [deleteDelayMs, setDeleteDelayMs] = useState(500);
+  const [deleteWaitMode, setDeleteWaitMode] = useState<'track' | 'fire'>('track');
+  const [isDeleting, setIsDeleting] = useState(false);
+  
+  // Session tracking for progress
+  const [deleteSessionId, setDeleteSessionId] = useState<string | null>(null);
+  
+  // Create form state
+  const [showCreateForm, setShowCreateForm] = useState(false);
 
   const fetchVenues = async () => {
     try {
@@ -45,6 +63,118 @@ export const VenuesPage: React.FC = () => {
       second: '2-digit'
     });
   };
+
+  // Selection handlers
+  const handleSelectAll = () => {
+    if (selectedVenueIds.size === venues.length) {
+      setSelectedVenueIds(new Set());
+    } else {
+      setSelectedVenueIds(new Set(venues.map(v => v.id)));
+    }
+  };
+
+  const handleSelectVenue = (venueId: string) => {
+    const newSelection = new Set(selectedVenueIds);
+    if (newSelection.has(venueId)) {
+      newSelection.delete(venueId);
+    } else {
+      newSelection.add(venueId);
+    }
+    setSelectedVenueIds(newSelection);
+  };
+
+  const handleDeleteClick = () => {
+    if (selectedVenueIds.size > 0) {
+      setShowDeleteDialog(true);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteDialog(false);
+  };
+
+  const handleConfirmDelete = async () => {
+    setIsDeleting(true);
+    try {
+      const request: BulkVenueDeleteRequest = {
+        venueIds: Array.from(selectedVenueIds),
+        options: {
+          maxConcurrent: deleteMaxConcurrent,
+          delayMs: deleteDelayMs
+        }
+      };
+
+      const response = await apiService.bulkDeleteVenues(request);
+      
+      if (response.success && response.data) {
+        if (deleteWaitMode === 'track') {
+          // Switch to progress tracking view
+          setDeleteSessionId(response.data.sessionId);
+          setShowDeleteDialog(false);
+        } else {
+          // Fire and forget mode
+          setShowDeleteDialog(false);
+          setSelectedVenueIds(new Set());
+          // Refresh venue list after a short delay
+          setTimeout(() => {
+            handleRefresh();
+          }, 1000);
+        }
+      } else {
+        setError(response.error || 'Failed to start delete operation');
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.error || err.message || 'Failed to delete venues');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleProgressComplete = () => {
+    // When progress tracking is complete, return to venue list
+    setDeleteSessionId(null);
+    setSelectedVenueIds(new Set());
+    handleRefresh();
+  };
+
+  const handleCreateComplete = () => {
+    setShowCreateForm(false);
+    handleRefresh();
+  };
+
+  // If showing progress tracking view
+  if (deleteSessionId) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <button
+            onClick={handleProgressComplete}
+            className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+          >
+            ← Back to Venues
+          </button>
+        </div>
+        <OperationProgress sessionId={deleteSessionId} />
+      </div>
+    );
+  }
+
+  // If showing create form
+  if (showCreateForm) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <button
+            onClick={() => setShowCreateForm(false)}
+            className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+          >
+            ← Back to Venues
+          </button>
+        </div>
+        <BulkVenueForm onComplete={handleCreateComplete} />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -102,6 +232,94 @@ export const VenuesPage: React.FC = () => {
         </div>
       )}
 
+      {/* Delete Confirmation Dialog */}
+      {showDeleteDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Delete Venues</h3>
+            <p className="text-gray-700 mb-6">
+              You are about to delete <span className="font-bold text-red-600">{selectedVenueIds.size}</span> venue(s). This action cannot be undone.
+            </p>
+
+            <div className="space-y-4 mb-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Max Concurrent (1-20)
+                </label>
+                <input
+                  type="number"
+                  value={deleteMaxConcurrent}
+                  onChange={(e) => setDeleteMaxConcurrent(Number(e.target.value))}
+                  min="1"
+                  max="20"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Delay Between Ops (ms)
+                </label>
+                <input
+                  type="number"
+                  value={deleteDelayMs}
+                  onChange={(e) => setDeleteDelayMs(Number(e.target.value))}
+                  min="0"
+                  max="10000"
+                  step="100"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Wait Mode
+                </label>
+                <div className="space-y-2">
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      value="track"
+                      checked={deleteWaitMode === 'track'}
+                      onChange={(e) => setDeleteWaitMode(e.target.value as 'track' | 'fire')}
+                      className="mr-2"
+                    />
+                    <span className="text-sm text-gray-700">Track Progress - Show detailed progress</span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      value="fire"
+                      checked={deleteWaitMode === 'fire'}
+                      onChange={(e) => setDeleteWaitMode(e.target.value as 'track' | 'fire')}
+                      className="mr-2"
+                    />
+                    <span className="text-sm text-gray-700">Fire and Forget - Start and return immediately</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={handleCancelDelete}
+                disabled={isDeleting}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                disabled={isDeleting}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {isDeleting ? 'Starting...' : 'Confirm Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Venues Table */}
       {!isLoading && !error && (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
@@ -110,6 +328,23 @@ export const VenuesPage: React.FC = () => {
               <h3 className="text-lg font-bold text-gray-900">
                 All Venues ({venues.length})
               </h3>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowCreateForm(true)}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+                >
+                  <span>➕</span>
+                  Create Venues
+                </button>
+                <button
+                  onClick={handleDeleteClick}
+                  disabled={selectedVenueIds.size === 0}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                >
+                  <span>🗑️</span>
+                  Delete Selected {selectedVenueIds.size > 0 && `(${selectedVenueIds.size})`}
+                </button>
+              </div>
             </div>
           </div>
 
@@ -126,23 +361,19 @@ export const VenuesPage: React.FC = () => {
               <table className="w-full">
                 <thead className="bg-gray-50 sticky top-0 border-b border-gray-200">
                   <tr>
+                    <th className="px-6 py-3 text-left w-12">
+                      <input
+                        type="checkbox"
+                        checked={selectedVenueIds.size === venues.length && venues.length > 0}
+                        onChange={handleSelectAll}
+                        className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-2 focus:ring-blue-500"
+                      />
+                    </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Name
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Venue ID
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Address
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      City
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Country
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Timezone
                     </th>
                   </tr>
                 </thead>
@@ -153,6 +384,14 @@ export const VenuesPage: React.FC = () => {
                       className="hover:bg-gray-50 transition-colors"
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
+                        <input
+                          type="checkbox"
+                          checked={selectedVenueIds.has(venue.id)}
+                          onChange={() => handleSelectVenue(venue.id)}
+                          className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-2 focus:ring-blue-500"
+                        />
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
                           {venue.name}
                         </div>
@@ -160,26 +399,6 @@ export const VenuesPage: React.FC = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-600 font-mono">
                           {venue.id}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-gray-700">
-                          {venue.addressLine || '-'}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-700">
-                          {venue.city || '-'}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-700">
-                          {venue.countryCode || venue.country || '-'}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-600">
-                          {venue.timezone || '-'}
                         </div>
                       </td>
                     </tr>
