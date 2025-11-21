@@ -69,10 +69,27 @@ class MCPClientService {
       stderr: 'inherit', // Show MCP server logs
     });
 
+    // Add transport event handlers for debugging
+    console.log('[MCP Client] Setting up transport event handlers...');
+    
+    // Note: StdioClientTransport may not expose all events directly
+    // We'll add what we can and add timing information
+    
+    const startTime = Date.now();
+    
+    // Add delay to ensure server process is ready
+    console.log('[MCP Client] Waiting for MCP server to be ready...');
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
     console.log('[MCP Client] Connecting to MCP server...');
+    const connectStartTime = Date.now();
     
     // Connect client to transport (handles initialization automatically)
     await this.client.connect(this.transport);
+    
+    const connectEndTime = Date.now();
+    console.log(`[MCP Client] Connection established in ${connectEndTime - connectStartTime}ms`);
+    console.log(`[MCP Client] Total startup time: ${connectEndTime - startTime}ms`);
 
     this.isInitialized = true;
     console.log('[MCP Client] Client connected and ready ✓');
@@ -93,14 +110,20 @@ class MCPClientService {
     console.log(`[MCP Client] Calling tool: ${toolName}`);
     console.log(`[MCP Client] Arguments:`, JSON.stringify(args, null, 2));
 
+    const callStartTime = Date.now();
     const response = await this.client.callTool({
       name: toolName,
       arguments: args,
     });
+    const callEndTime = Date.now();
 
-    console.log(`[MCP Client] Response received for ${toolName}`);
+    console.log(`[MCP Client] Response received for ${toolName} in ${callEndTime - callStartTime}ms`);
     console.log(`[MCP Client] Is error:`, response.isError);
     console.log(`[MCP Client] Content type:`, typeof response.content);
+    console.log(`[MCP Client] Content array length:`, Array.isArray(response.content) ? response.content.length : 'not an array');
+    
+    // Log full response structure for debugging
+    console.log(`[MCP Client] Full response structure:`, JSON.stringify(response, null, 2).substring(0, 500));
 
     if (response.isError) {
       const content = response.content as any;
@@ -112,10 +135,12 @@ class MCPClientService {
     // Parse the text content (it's JSON string)
     const content = response.content as any;
     const textContent = content?.[0]?.text;
-    console.log(`[MCP Client] Raw response text:`, textContent?.substring(0, 200));
+    console.log(`[MCP Client] Raw response text length:`, textContent?.length || 0);
+    console.log(`[MCP Client] Raw response text preview:`, textContent?.substring(0, 200));
     
     if (!textContent) {
-      console.log(`[MCP Client] No text content in response`);
+      console.log(`[MCP Client] WARNING: No text content in response`);
+      console.log(`[MCP Client] Content object:`, JSON.stringify(content));
       return null;
     }
 
