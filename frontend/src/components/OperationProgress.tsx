@@ -107,32 +107,32 @@ export const OperationProgress: React.FC<Props> = ({ sessionId, onComplete }) =>
   return (
     <div className="space-y-6">
       {/* Progress Summary */}
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-white rounded-lg shadow-medium p-6">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold">Operation Progress</h3>
+          <h3 className="text-lg font-semibold text-gray-900">Operation Progress</h3>
           <div className="flex gap-2">
             {session.status === 'running' && (
               <button
                 onClick={handlePause}
-                className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                className="btn-warning text-sm"
               >
-                Pause
+                ⏸ Pause
               </button>
             )}
             {session.status === 'paused' && (
               <button
                 onClick={handleResume}
-                className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+                className="btn-success text-sm"
               >
-                Resume
+                ▶ Resume
               </button>
             )}
             {(session.status === 'running' || session.status === 'paused') && (
               <button
                 onClick={handleCancel}
-                className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                className="btn-danger text-sm"
               >
-                Cancel
+                ✕ Cancel
               </button>
             )}
           </div>
@@ -174,9 +174,9 @@ export const OperationProgress: React.FC<Props> = ({ sessionId, onComplete }) =>
       </div>
 
       {/* Operations Table */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b">
-          <h3 className="text-lg font-semibold">Operations</h3>
+      <div className="bg-white rounded-lg shadow-medium border border-gray-200">
+        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+          <h3 className="text-lg font-semibold text-gray-900">Operations</h3>
         </div>
         <div className="overflow-x-auto max-h-96">
           <table className="w-full">

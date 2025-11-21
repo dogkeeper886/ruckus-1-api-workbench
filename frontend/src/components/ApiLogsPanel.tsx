@@ -74,11 +74,11 @@ export const ApiLogsPanel: React.FC = () => {
   const filteredLogs = logs;
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+    <div className="bg-white rounded-lg shadow-medium border border-gray-200">
       {/* Header */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full px-6 py-4 flex justify-between items-center text-left hover:bg-gray-50 transition-colors"
+        className="w-full px-6 py-4 flex justify-between items-center text-left hover:bg-gray-50 transition-colors rounded-t-lg"
       >
         <div className="flex items-center gap-4">
           <h3 className="text-lg font-bold text-gray-900">API Request Logs</h3>
@@ -102,19 +102,15 @@ export const ApiLogsPanel: React.FC = () => {
             <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
               <button
                 onClick={() => setIsPolling(!isPolling)}
-                className={`px-3 py-1 text-xs rounded transition-colors ${
-                  isPolling 
-                    ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' 
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
+                className={isPolling ? 'btn-warning text-xs' : 'btn-success text-xs'}
               >
                 {isPolling ? '⏸ Pause' : '▶ Resume'}
               </button>
               <button
                 onClick={handleClearLogs}
-                className="px-3 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
+                className="btn-danger text-xs"
               >
-                Clear Logs
+                🗑️ Clear Logs
               </button>
             </div>
           )}
@@ -136,10 +132,10 @@ export const ApiLogsPanel: React.FC = () => {
                   <button
                     key={status}
                     onClick={() => setFilterStatus(status)}
-                    className={`px-3 py-1 text-xs rounded transition-colors ${
+                    className={`px-3 py-1 text-xs rounded-lg font-medium transition-all duration-200 ${
                       filterStatus === status
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                        ? 'btn-primary'
+                        : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 hover:shadow-small'
                     }`}
                   >
                     {status.charAt(0).toUpperCase() + status.slice(1)}

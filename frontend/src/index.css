@@ -104,14 +104,14 @@
     @apply transition-all duration-200;
     @apply disabled:bg-gray-400 disabled:cursor-not-allowed;
     background: linear-gradient(to bottom, rgb(59, 130, 246), rgb(37, 99, 235));
-    box-shadow: 
+    box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.3),
       0 2px 4px rgba(0, 0, 0, 0.1);
   }
 
   .btn-primary:hover:not(:disabled) {
     background: linear-gradient(to bottom, rgb(37, 99, 235), rgb(29, 78, 216));
-    box-shadow: 
+    box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.3),
       0 4px 8px rgba(0, 0, 0, 0.15);
   }
@@ -121,9 +121,42 @@
     @apply hover:bg-gray-300 active:bg-gray-400;
     @apply transition-all duration-200;
     background: linear-gradient(to bottom, rgb(229, 231, 235), rgb(209, 213, 219));
-    box-shadow: 
+    box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.4),
       0 1px 2px rgba(0, 0, 0, 0.1);
+  }
+
+  .btn-success {
+    @apply px-4 py-2 bg-green-600 text-white rounded-lg font-medium;
+    @apply hover:bg-green-700 active:bg-green-800;
+    @apply transition-all duration-200;
+    @apply disabled:bg-gray-400 disabled:cursor-not-allowed;
+    background: linear-gradient(to bottom, rgb(34, 197, 94), rgb(22, 163, 74));
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.3),
+      0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .btn-danger {
+    @apply px-4 py-2 bg-red-600 text-white rounded-lg font-medium;
+    @apply hover:bg-red-700 active:bg-red-800;
+    @apply transition-all duration-200;
+    @apply disabled:bg-gray-400 disabled:cursor-not-allowed;
+    background: linear-gradient(to bottom, rgb(239, 68, 68), rgb(220, 38, 38));
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.3),
+      0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .btn-warning {
+    @apply px-4 py-2 bg-yellow-500 text-white rounded-lg font-medium;
+    @apply hover:bg-yellow-600 active:bg-yellow-700;
+    @apply transition-all duration-200;
+    @apply disabled:bg-gray-400 disabled:cursor-not-allowed;
+    background: linear-gradient(to bottom, rgb(234, 179, 8), rgb(202, 138, 4));
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.3),
+      0 2px 4px rgba(0, 0, 0, 0.1);
   }
 
   /* ============================================================================
