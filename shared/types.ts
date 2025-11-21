@@ -5,6 +5,37 @@
 export type OperationType = 'venue' | 'wlan' | 'ap';
 export type OperationStatus = 'queued' | 'running' | 'success' | 'failed' | 'cancelled';
 
+/**
+ * API Log Entry - tracks MCP tool calls
+ */
+export interface ApiLogEntry {
+  id: string;
+  timestamp: Date;
+  toolName: string;
+  requestData: any;
+  responseData: any;
+  duration: number;
+  status: 'success' | 'error';
+  errorMessage?: string;
+}
+
+/**
+ * Venue data structure
+ */
+export interface Venue {
+  id: string;
+  name: string;
+  addressLine?: string;
+  city?: string;
+  country?: string;
+  countryCode?: string;
+  timezone?: string;
+  latitude?: number;
+  longitude?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface Operation {
   id: string;
   type: OperationType;

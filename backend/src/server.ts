@@ -5,6 +5,7 @@ import bulkVenuesRouter from './routes/bulkVenues';
 import bulkWlansRouter from './routes/bulkWlans';
 import bulkApsRouter from './routes/bulkAps';
 import sessionsRouter from './routes/sessions';
+import logsRouter from './routes/logs';
 import { mcpClient } from './services/mcpClientService';
 
 // Load environment variables
@@ -37,6 +38,7 @@ app.use('/api/venues', bulkVenuesRouter);
 app.use('/api/wlans', bulkWlansRouter);
 app.use('/api/aps', bulkApsRouter);
 app.use('/api/sessions', sessionsRouter);
+app.use('/api/logs', logsRouter);
 
 // 404 handler
 app.use((req, res) => {
@@ -97,6 +99,9 @@ Available endpoints:
   - POST /api/sessions/:sessionId/resume
   - POST /api/sessions/:sessionId/cancel
   - DELETE /api/sessions/:sessionId
+  - GET  /api/logs
+  - GET  /api/logs/stats
+  - DELETE /api/logs
   `);
     });
 

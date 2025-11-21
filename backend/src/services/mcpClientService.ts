@@ -1,6 +1,7 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import path from 'path';
+import { apiLogTracker } from '../models/apiLogTracker';
 
 /**
  * MCP Client Service
@@ -111,47 +112,102 @@ class MCPClientService {
     console.log(`[MCP Client] Arguments:`, JSON.stringify(args, null, 2));
 
     const callStartTime = Date.now();
-    const response = await this.client.callTool({
-      name: toolName,
-      arguments: args,
-    });
-    const callEndTime = Date.now();
-
-    console.log(`[MCP Client] Response received for ${toolName} in ${callEndTime - callStartTime}ms`);
-    console.log(`[MCP Client] Is error:`, response.isError);
-    console.log(`[MCP Client] Content type:`, typeof response.content);
-    console.log(`[MCP Client] Content array length:`, Array.isArray(response.content) ? response.content.length : 'not an array');
     
-    // Log full response structure for debugging
-    console.log(`[MCP Client] Full response structure:`, JSON.stringify(response, null, 2).substring(0, 500));
-
-    if (response.isError) {
-      const content = response.content as any;
-      const errorText = content?.[0]?.text || 'Unknown error';
-      console.error(`[MCP Client] Tool ${toolName} failed:`, errorText);
-      throw new Error(`Tool ${toolName} error: ${errorText}`);
-    }
-
-    // Parse the text content (it's JSON string)
-    const content = response.content as any;
-    const textContent = content?.[0]?.text;
-    console.log(`[MCP Client] Raw response text length:`, textContent?.length || 0);
-    console.log(`[MCP Client] Raw response text preview:`, textContent?.substring(0, 200));
-    
-    if (!textContent) {
-      console.log(`[MCP Client] WARNING: No text content in response`);
-      console.log(`[MCP Client] Content object:`, JSON.stringify(content));
-      return null;
-    }
-
     try {
-      const parsed = JSON.parse(textContent);
-      console.log(`[MCP Client] Successfully parsed JSON response`);
+      const response = await this.client.callTool({
+        name: toolName,
+        arguments: args,
+      });
+      const callEndTime = Date.now();
+      const duration = callEndTime - callStartTime;
+
+      console.log(`[MCP Client] Response received for ${toolName} in ${duration}ms`);
+      console.log(`[MCP Client] Is error:`, response.isError);
+      console.log(`[MCP Client] Content type:`, typeof response.content);
+      console.log(`[MCP Client] Content array length:`, Array.isArray(response.content) ? response.content.length : 'not an array');
+      
+      // Log full response structure for debugging
+      console.log(`[MCP Client] Full response structure:`, JSON.stringify(response, null, 2).substring(0, 500));
+
+      if (response.isError) {
+        const content = response.content as any;
+        const errorText = content?.[0]?.text || 'Unknown error';
+        console.error(`[MCP Client] Tool ${toolName} failed:`, errorText);
+        
+        // Log error to tracker
+        apiLogTracker.addLog({
+          timestamp: new Date(),
+          toolName,
+          requestData: args,
+          responseData: response,
+          duration,
+          status: 'error',
+          errorMessage: errorText,
+        });
+        
+        throw new Error(`Tool ${toolName} error: ${errorText}`);
+      }
+
+      // Parse the text content (it's JSON string)
+      const content = response.content as any;
+      const textContent = content?.[0]?.text;
+      console.log(`[MCP Client] Raw response text length:`, textContent?.length || 0);
+      console.log(`[MCP Client] Raw response text preview:`, textContent?.substring(0, 200));
+      
+      if (!textContent) {
+        console.log(`[MCP Client] WARNING: No text content in response`);
+        console.log(`[MCP Client] Content object:`, JSON.stringify(content));
+        
+        // Log warning to tracker
+        apiLogTracker.addLog({
+          timestamp: new Date(),
+          toolName,
+          requestData: args,
+          responseData: response,
+          duration,
+          status: 'error',
+          errorMessage: 'No text content in response',
+        });
+        
+        return null;
+      }
+
+      let parsed;
+      try {
+        parsed = JSON.parse(textContent);
+        console.log(`[MCP Client] Successfully parsed JSON response`);
+      } catch (e) {
+        // If not JSON, return as-is
+        console.log(`[MCP Client] Response is not JSON, returning as-is`);
+        parsed = textContent;
+      }
+      
+      // Log success to tracker
+      apiLogTracker.addLog({
+        timestamp: new Date(),
+        toolName,
+        requestData: args,
+        responseData: parsed,
+        duration,
+        status: 'success',
+      });
+      
       return parsed;
-    } catch (e) {
-      // If not JSON, return as-is
-      console.log(`[MCP Client] Response is not JSON, returning as-is`);
-      return textContent;
+    } catch (error: any) {
+      const duration = Date.now() - callStartTime;
+      
+      // Log error to tracker
+      apiLogTracker.addLog({
+        timestamp: new Date(),
+        toolName,
+        requestData: args,
+        responseData: null,
+        duration,
+        status: 'error',
+        errorMessage: error.message || 'Unknown error',
+      });
+      
+      throw error;
     }
   }
 

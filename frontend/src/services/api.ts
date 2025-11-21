@@ -12,7 +12,9 @@ import {
   SessionResponse,
   ProgressResponse,
   OperationsResponse,
-  BulkOperationSession
+  BulkOperationSession,
+  Venue,
+  ApiLogEntry
 } from '../../../shared/types';
 
 class ApiService {
@@ -114,6 +116,32 @@ class ApiService {
 
   async deleteSession(sessionId: string): Promise<{ success: boolean; message: string }> {
     const response = await this.client.delete(`/sessions/${sessionId}`);
+    return response.data;
+  }
+
+  // Venues operations
+  async getVenues(): Promise<Venue[]> {
+    const response = await this.client.get('/venues');
+    return response.data.data?.data || [];
+  }
+
+  // API logs operations
+  async getApiLogs(status?: 'success' | 'error', limit?: number): Promise<ApiLogEntry[]> {
+    const params: any = {};
+    if (status) params.status = status;
+    if (limit) params.limit = limit;
+    
+    const response = await this.client.get('/logs', { params });
+    return response.data.data || [];
+  }
+
+  async getApiLogStats(): Promise<{ total: number; success: number; error: number; averageDuration: number }> {
+    const response = await this.client.get('/logs/stats');
+    return response.data.data;
+  }
+
+  async clearApiLogs(): Promise<{ success: boolean; message: string }> {
+    const response = await this.client.delete('/logs');
     return response.data;
   }
 }

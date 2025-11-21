@@ -41,13 +41,65 @@ ruckus-1-api-workbench/
 
 ## Quick Start
 
-### 1. Clone and Setup
+### Option A: Automated Setup (Recommended)
 
 ```bash
-cd /home/jack/src/ruckus-1-api-workbench
+# Make setup script executable
+chmod +x setup.sh
+
+# Run automated setup
+./setup.sh
 ```
 
-### 2. Backend Setup
+This will:
+- Install backend dependencies
+- Install frontend dependencies
+- Create `.env` template
+- Build backend TypeScript
+
+Then configure your credentials:
+
+```bash
+# Edit backend/.env
+nano backend/.env
+```
+
+Add your RUCKUS One credentials:
+```bash
+RUCKUS_TENANT_ID=your-tenant-id-here
+RUCKUS_CLIENT_ID=your-client-id-here
+RUCKUS_CLIENT_SECRET=your-secret-here
+RUCKUS_REGION=us              # Optional: us, eu, asia (leave blank for global)
+PORT=3003
+```
+
+Save and exit (Ctrl+X, Y, Enter)
+
+**Start Services with Makefile:**
+
+```bash
+# Clean up any old processes and start backend
+make backend
+```
+
+In another terminal:
+```bash
+# Start frontend
+make frontend
+```
+
+**Makefile Commands:**
+- `make help` - Show all available commands
+- `make clean` - Kill old processes on ports 3003/3002
+- `make status` - Show running services
+- `make backend` - Clean + start backend
+- `make frontend` - Start frontend  
+- `make dev` - Start both (parallel)
+- `make stop` - Stop all services
+
+### Option B: Manual Setup
+
+#### 1. Backend Setup
 
 ```bash
 cd backend
@@ -68,7 +120,7 @@ RUCKUS_TENANT_ID=your-tenant-id
 RUCKUS_CLIENT_ID=your-client-id
 RUCKUS_CLIENT_SECRET=your-client-secret
 RUCKUS_REGION=us              # Optional: us, eu, asia (leave blank for global)
-PORT=3001
+PORT=3003
 ```
 
 ```bash
@@ -79,9 +131,9 @@ npm run build
 npm run dev
 ```
 
-Backend will run on `http://localhost:3001`
+Backend will run on `http://localhost:3003`
 
-### 3. Frontend Setup
+#### 2. Frontend Setup
 
 Open a new terminal:
 
@@ -95,14 +147,59 @@ npm install
 npm run dev
 ```
 
-Frontend will run on `http://localhost:3000`
+Frontend will run on `http://localhost:3002`
 
-### 4. Access the Application
+### Access the Application
 
 Open your browser and navigate to:
 ```
-http://localhost:3000
+http://localhost:3002
 ```
+
+## Your First Bulk Operation
+
+### Create 10 Test Venues
+
+1. Click "Venues" tab (default view)
+2. Ensure "Create Venues" is selected
+3. Fill in the form:
+   - **Prefix**: `TestVenue-`
+   - **Suffix**: `` (leave empty)
+   - **Count**: `10`
+   - **Start Step**: `1`
+   - **Address**: `123 Test Street`
+   - **City**: `TestCity`
+   - **Country**: `US`
+   - **Timezone**: `America/New_York`
+   - **Max Concurrent**: `5`
+   - **Delay Between Ops**: `500`
+
+4. Click "Create 10 Venues"
+
+5. Watch the progress:
+   - Progress bar shows completion percentage
+   - Stats show success/failed/running counts
+   - Operations table shows each venue's status
+
+6. Wait for completion (all operations show green "success" badges)
+
+### Verify in RUCKUS One
+
+Log into your RUCKUS One dashboard and verify the venues were created:
+- TestVenue-1
+- TestVenue-2
+- ...
+- TestVenue-10
+
+### Clean Up Test Venues
+
+1. In RUCKUS One, copy the venue IDs
+2. Return to the workbench
+3. Select "Delete Venues"
+4. Paste venue IDs (one per line)
+5. Set concurrency: `5`
+6. Set delay: `500`
+7. Click "Delete Venues"
 
 ## Usage
 
@@ -152,6 +249,50 @@ http://localhost:3000
 3. Enter target venue ID and AP group ID
 4. Set concurrency and delay
 5. Click "Add N APs"
+
+## Common Operations
+
+### Create 100 Venues
+```
+Prefix: Venue-
+Count: 100
+Concurrency: 10
+Delay: 500ms
+```
+
+### Create 50 WLANs
+```
+Navigate to "WLANs" tab
+Name Prefix: TestWLAN-
+SSID Prefix: TestSSID-
+Count: 50
+Type: PSK
+Passphrase: TestPassword123
+Concurrency: 5
+Delay: 1000ms
+```
+
+### Add 20 APs
+```
+Navigate to "Access Points" tab
+Name Prefix: AP-
+Serial Prefix: SN-
+Count: 20
+Venue ID: <from RUCKUS One>
+AP Group ID: <from RUCKUS One>
+Concurrency: 5
+Delay: 500ms
+```
+
+## Tips
+
+- **Start small**: Test with 5-10 operations first
+- **Increase gradually**: Once confident, scale to 50, 100, 500+
+- **Monitor progress**: Watch for failures and adjust concurrency/delay
+- **Use pause/resume**: Pause operations if you see errors
+- **Cancel when needed**: Cancel operations that are failing repeatedly
+- **Concurrency**: Higher = faster, but may hit rate limits
+- **Delay**: Higher = safer, but slower
 
 ## API Endpoints
 
@@ -219,7 +360,31 @@ The progress display shows:
 
 ## Troubleshooting
 
-### Backend Issues
+### Old Processes Still Running
+
+```bash
+# Use Makefile to clean up
+make clean
+
+# Or manually check and kill
+make status
+```
+
+### Backend Won't Start
+
+```bash
+# Check Node.js version (should be 18+)
+node -v
+
+# Clean up old processes first
+make clean
+
+# Reinstall dependencies if needed
+cd backend
+rm -rf node_modules package-lock.json
+npm install
+npm run build
+```
 
 **Connection refused:**
 ```bash
@@ -234,23 +399,25 @@ npm run dev
 - Ensure credentials have necessary API permissions
 
 **CORS errors:**
-- Backend includes CORS middleware for localhost:3000
+- Backend includes CORS middleware for localhost:3002
 - If using different ports, update `backend/src/server.ts`
 
-### Frontend Issues
+### Frontend Won't Start
+
+```bash
+cd frontend
+rm -rf node_modules package-lock.json
+npm install
+```
 
 **API calls fail:**
-- Verify backend is running on port 3001
+- Verify backend is running on port 3003
 - Check proxy configuration in `frontend/vite.config.ts`
 - Open browser console for detailed errors
 
 **Build errors:**
 - Ensure Node.js 18+ is installed
-- Clear node_modules and reinstall:
-  ```bash
-  rm -rf node_modules package-lock.json
-  npm install
-  ```
+- Clear node_modules and reinstall (see above)
 
 ## Development
 
@@ -355,20 +522,9 @@ MIT
 ## Support
 
 For issues or questions:
-- Check troubleshooting section
-- Review backend logs for API errors
-- Check browser console for frontend errors
-- Ensure RUCKUS One API credentials are valid
-
-## Roadmap
-
-Future enhancements:
-- [ ] Export results to CSV/JSON
-- [ ] Save operation templates
-- [ ] Batch operation scheduling
-- [ ] Database persistence (PostgreSQL)
-- [ ] WebSocket real-time updates
-- [ ] Multi-tenant support
-- [ ] API rate limit detection
-- [ ] Dry-run mode
-- [ ] Operation rollback
+1. Check troubleshooting section above
+2. Review backend logs for API errors
+3. Check browser console for frontend errors
+4. Verify RUCKUS One credentials are valid
+5. Ensure you have API permissions in RUCKUS One
+6. Explore the API health endpoint at http://localhost:3003/health
