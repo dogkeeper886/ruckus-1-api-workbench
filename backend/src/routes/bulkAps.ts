@@ -106,10 +106,10 @@ router.post('/bulk-add', async (req: Request, res: Response) => {
   try {
     const request: BulkApAddRequest = req.body;
 
-    if (!request.namePrefix || !request.serialPrefix || request.count < 1 || !request.venueId || !request.apGroupId) {
+    if (!request.namePrefix || !request.startSerialNumber || request.count < 1 || !request.venueId || !request.apGroupId) {
       return res.status(400).json({
         success: false,
-        error: 'Missing required fields: namePrefix, serialPrefix, count, venueId, apGroupId'
+        error: 'Missing required fields: namePrefix, startSerialNumber, count, venueId, apGroupId'
       });
     }
 

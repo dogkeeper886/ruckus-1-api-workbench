@@ -12,7 +12,7 @@ export const BulkApForm: React.FC<Props> = ({ onComplete }) => {
 
   // Form state
   const [namePrefix, setNamePrefix] = useState('AP-');
-  const [serialPrefix, setSerialPrefix] = useState('121403001');
+  const [startSerialNumber, setStartSerialNumber] = useState('12140300133');
   const [count, setCount] = useState(10);
   const [startStep, setStartStep] = useState(1);
   const [description, setDescription] = useState('');
@@ -102,8 +102,7 @@ export const BulkApForm: React.FC<Props> = ({ onComplete }) => {
       const request: BulkApAddRequest = {
         namePrefix,
         nameSuffix: '',
-        serialPrefix,
-        serialSuffix: '',
+        startSerialNumber,
         count,
         startStep,
         venueId: selectedVenueId,
@@ -276,18 +275,18 @@ export const BulkApForm: React.FC<Props> = ({ onComplete }) => {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Serial Prefix
+                Starting Serial Number
               </label>
               <input
                 type="text"
-                value={serialPrefix}
-                onChange={(e) => setSerialPrefix(e.target.value)}
+                value={startSerialNumber}
+                onChange={(e) => setStartSerialNumber(e.target.value)}
                 className="w-full px-3 py-2 border rounded-md"
                 required
-                placeholder="e.g., 121403001"
+                placeholder="e.g., 12140300133"
               />
               <p className="text-xs text-gray-500 mt-1">
-                Test serial: 121403001033
+                Enter the first serial number
               </p>
             </div>
             <div>
@@ -305,7 +304,7 @@ export const BulkApForm: React.FC<Props> = ({ onComplete }) => {
           </div>
           <div className="mt-4 p-3 bg-gray-50 rounded">
             <p className="text-sm text-gray-600">
-              Serial Preview: {serialPrefix}{startStep.toString().padStart(3, '0')}, {serialPrefix}{(startStep + 1).toString().padStart(3, '0')}, ...
+              Serial Preview: {startSerialNumber}, {(parseInt(startSerialNumber) + 1).toString()}, {(parseInt(startSerialNumber) + 2).toString()}, ...
             </p>
           </div>
         </div>

@@ -169,8 +169,7 @@ export interface BulkWlanDeleteRequest {
 export interface BulkApAddRequest {
   namePrefix: string;
   nameSuffix: string;
-  serialPrefix: string;
-  serialSuffix: string;
+  startSerialNumber: string;
   count: number;
   startStep: number;
   venueId: string;

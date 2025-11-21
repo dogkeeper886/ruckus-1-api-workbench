@@ -526,7 +526,13 @@ export async function bulkDeleteWlans(request: BulkWlanDeleteRequest): Promise<s
 export async function bulkAddAps(request: BulkApAddRequest): Promise<string> {
 
   const names = generateNames(request.namePrefix, request.nameSuffix, request.count, request.startStep);
-  const serialNumbers = generateNames(request.serialPrefix, request.serialSuffix, request.count, request.startStep);
+
+  // Generate serial numbers by incrementing the starting serial number
+  const startSerial = parseInt(request.startSerialNumber, 10);
+  const serialNumbers = Array.from(
+    { length: request.count },
+    (_, i) => (startSerial + i).toString()
+  );
 
   const sessionId = operationTracker.createSession('ap', 'add', names.length);
   
