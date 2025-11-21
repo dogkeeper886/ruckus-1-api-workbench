@@ -14,6 +14,7 @@ import {
   OperationsResponse,
   BulkOperationSession,
   Venue,
+  AccessPoint,
   ApiLogEntry
 } from '../../../shared/types';
 
@@ -123,6 +124,18 @@ class ApiService {
   async getVenues(): Promise<Venue[]> {
     const response = await this.client.get('/venues');
     return response.data.data?.data || [];
+  }
+
+  // AP operations
+  async getAps(params?: { venueId?: string; searchString?: string }): Promise<any> {
+    const response = await this.client.get('/aps', { params });
+    return response.data.data || { data: [], total: 0 };
+  }
+
+  async getApGroups(venueId?: string): Promise<any> {
+    const params = venueId ? { venueId } : {};
+    const response = await this.client.get('/aps/ap-groups', { params });
+    return response.data.data || { data: [], total: 0 };
   }
 
   // API logs operations

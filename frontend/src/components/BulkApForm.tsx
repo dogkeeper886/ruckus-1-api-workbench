@@ -1,0 +1,360 @@
+import React, { useState, useEffect } from 'react';
+import { apiService } from '../services/api';
+import { BulkApAddRequest, Venue } from '../../../shared/types';
+import { OperationProgress } from './OperationProgress';
+
+interface Props {
+  onComplete?: () => void;
+}
+
+export const BulkApForm: React.FC<Props> = ({ onComplete }) => {
+  const [sessionId, setSessionId] = useState<string | null>(null);
+
+  // Form state
+  const [namePrefix, setNamePrefix] = useState('AP-');
+  const [serialPrefix, setSerialPrefix] = useState('121403001');
+  const [count, setCount] = useState(10);
+  const [startStep, setStartStep] = useState(1);
+  const [description, setDescription] = useState('');
+
+  // Venue and AP Group selection
+  const [venues, setVenues] = useState<Venue[]>([]);
+  const [apGroups, setApGroups] = useState<any[]>([]);
+  const [selectedVenueId, setSelectedVenueId] = useState('');
+  const [selectedApGroupId, setSelectedApGroupId] = useState('');
+  const [isLoadingVenues, setIsLoadingVenues] = useState(false);
+  const [isLoadingApGroups, setIsLoadingApGroups] = useState(false);
+
+  // Options
+  const [maxConcurrent, setMaxConcurrent] = useState(5);
+  const [delayMs, setDelayMs] = useState(500);
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Load venues on mount
+  useEffect(() => {
+    const loadVenues = async () => {
+      setIsLoadingVenues(true);
+      try {
+        const venuesData = await apiService.getVenues();
+        setVenues(venuesData);
+      } catch (err: any) {
+        console.error('Error loading venues:', err);
+        setError('Failed to load venues');
+      } finally {
+        setIsLoadingVenues(false);
+      }
+    };
+    loadVenues();
+  }, []);
+
+  // Load AP groups when venue is selected
+  useEffect(() => {
+    if (!selectedVenueId) {
+      setApGroups([]);
+      setSelectedApGroupId('');
+      return;
+    }
+
+    const loadApGroups = async () => {
+      setIsLoadingApGroups(true);
+      try {
+        // Fetch AP groups filtered by selected venue
+        const apGroupsData = await apiService.getApGroups(selectedVenueId);
+        console.log('[BulkApForm] AP groups for venue:', selectedVenueId, apGroupsData);
+        
+        // Get AP groups for this venue
+        const venueGroups = apGroupsData.data || [];
+        setApGroups(venueGroups);
+        
+        // Auto-select first group if available
+        if (venueGroups.length > 0 && !selectedApGroupId) {
+          setSelectedApGroupId(venueGroups[0].id);
+        }
+      } catch (err: any) {
+        console.error('Error loading AP groups:', err);
+        setError('Failed to load AP groups');
+      } finally {
+        setIsLoadingApGroups(false);
+      }
+    };
+    loadApGroups();
+  }, [selectedVenueId]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    if (!selectedVenueId) {
+      setError('Please select a venue');
+      return;
+    }
+
+    if (!selectedApGroupId) {
+      setError('Please select an AP group');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const request: BulkApAddRequest = {
+        namePrefix,
+        nameSuffix: '',
+        serialPrefix,
+        serialSuffix: '',
+        count,
+        startStep,
+        venueId: selectedVenueId,
+        apGroupId: selectedApGroupId,
+        description,
+        options: {
+          maxConcurrent,
+          delayMs
+        }
+      };
+
+      const response = await apiService.bulkAddAps(request);
+      if (response.success && response.data) {
+        setSessionId(response.data.sessionId);
+      } else {
+        setError(response.error || 'Failed to start operation');
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.error || err.message || 'An error occurred');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const resetForm = () => {
+    setSessionId(null);
+    setError(null);
+  };
+
+  if (sessionId) {
+    return (
+      <div>
+        <button
+          onClick={resetForm}
+          className="mb-4 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+        >
+          ← Back to Form
+        </button>
+        <OperationProgress sessionId={sessionId} onComplete={onComplete} />
+      </div>
+    );
+  }
+
+  const selectedVenue = venues.find(v => v.id === selectedVenueId);
+
+  return (
+    <div className="max-w-4xl mx-auto">
+      <h2 className="text-2xl font-bold mb-6">Bulk AP Addition</h2>
+
+      {error && (
+        <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+          {error}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Venue and AP Group Selection */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold mb-4">Target Location</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Venue <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={selectedVenueId}
+                onChange={(e) => setSelectedVenueId(e.target.value)}
+                className="w-full px-3 py-2 border rounded-md"
+                required
+                disabled={isLoadingVenues}
+              >
+                <option value="">
+                  {isLoadingVenues ? 'Loading venues...' : 'Select a venue'}
+                </option>
+                {venues.map((venue) => (
+                  <option key={venue.id} value={venue.id}>
+                    {venue.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                AP Group <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={selectedApGroupId}
+                onChange={(e) => setSelectedApGroupId(e.target.value)}
+                className="w-full px-3 py-2 border rounded-md"
+                required
+                disabled={!selectedVenueId || isLoadingApGroups}
+              >
+                <option value="">
+                  {!selectedVenueId
+                    ? 'Select venue first'
+                    : isLoadingApGroups
+                    ? 'Loading AP groups...'
+                    : 'Select an AP group'}
+                </option>
+                {apGroups.map((group: any) => (
+                  <option key={group.id} value={group.id}>
+                    {group.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          {selectedVenue && (
+            <div className="mt-3 p-3 bg-blue-50 rounded text-sm text-blue-700">
+              <strong>Selected Venue:</strong> {selectedVenue.name}
+              {selectedVenue.city && ` (${selectedVenue.city})`}
+            </div>
+          )}
+        </div>
+
+        {/* Naming Pattern */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold mb-4">Naming Pattern</h3>
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Name Prefix
+              </label>
+              <input
+                type="text"
+                value={namePrefix}
+                onChange={(e) => setNamePrefix(e.target.value)}
+                className="w-full px-3 py-2 border rounded-md"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Start Step
+              </label>
+              <input
+                type="number"
+                value={startStep}
+                onChange={(e) => setStartStep(Number(e.target.value))}
+                min="1"
+                className="w-full px-3 py-2 border rounded-md"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Count
+              </label>
+              <input
+                type="number"
+                value={count}
+                onChange={(e) => setCount(Number(e.target.value))}
+                min="1"
+                max="1000"
+                className="w-full px-3 py-2 border rounded-md"
+                required
+              />
+            </div>
+          </div>
+          <div className="mt-4 p-3 bg-gray-50 rounded">
+            <p className="text-sm text-gray-600">
+              Preview: {namePrefix}{startStep}, {namePrefix}{startStep + 1}, {namePrefix}{startStep + 2}, ...
+            </p>
+          </div>
+        </div>
+
+        {/* Serial Number Pattern */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold mb-4">Serial Number Pattern</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Serial Prefix
+              </label>
+              <input
+                type="text"
+                value={serialPrefix}
+                onChange={(e) => setSerialPrefix(e.target.value)}
+                className="w-full px-3 py-2 border rounded-md"
+                required
+                placeholder="e.g., 121403001"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Test serial: 121403001033
+              </p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Description (Optional)
+              </label>
+              <input
+                type="text"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="w-full px-3 py-2 border rounded-md"
+                placeholder="e.g., Test APs"
+              />
+            </div>
+          </div>
+          <div className="mt-4 p-3 bg-gray-50 rounded">
+            <p className="text-sm text-gray-600">
+              Serial Preview: {serialPrefix}{startStep.toString().padStart(3, '0')}, {serialPrefix}{(startStep + 1).toString().padStart(3, '0')}, ...
+            </p>
+          </div>
+        </div>
+
+        {/* Operation Options */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold mb-4">Operation Options</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Max Concurrent (1-20)
+              </label>
+              <input
+                type="number"
+                value={maxConcurrent}
+                onChange={(e) => setMaxConcurrent(Number(e.target.value))}
+                min="1"
+                max="20"
+                className="w-full px-3 py-2 border rounded-md"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Delay Between Ops (ms)
+              </label>
+              <input
+                type="number"
+                value={delayMs}
+                onChange={(e) => setDelayMs(Number(e.target.value))}
+                min="0"
+                max="10000"
+                step="100"
+                className="w-full px-3 py-2 border rounded-md"
+                required
+              />
+            </div>
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          disabled={isSubmitting || !selectedVenueId || !selectedApGroupId}
+          className="w-full px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400"
+        >
+          {isSubmitting ? 'Starting...' : `Add ${count} APs`}
+        </button>
+      </form>
+    </div>
+  );
+};
+

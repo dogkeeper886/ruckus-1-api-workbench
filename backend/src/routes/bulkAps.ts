@@ -9,8 +9,94 @@ import {
   BulkApMoveRequest,
   BulkApRemoveRequest
 } from '../../../shared/types';
+import { mcpClient } from '../services/mcpClientService';
 
 const router = Router();
+
+/**
+ * GET /api/aps/ap-groups?venueId=xxx
+ * List AP groups from RUCKUS One, optionally filtered by venue
+ * NOTE: This must be defined BEFORE the GET / route to avoid path collision
+ */
+router.get('/ap-groups', async (req: Request, res: Response) => {
+  try {
+    const { venueId } = req.query;
+    console.log('[APs] Fetching AP groups via MCP...', venueId ? `for venue: ${venueId}` : 'all venues');
+    
+    const params: any = {
+      fields: ['id', 'name', 'venueId', 'venueName', 'description', 'isDefault'],
+      pageSize: 10000
+    };
+    
+    // Filter by venue if provided
+    if (venueId) {
+      params.filters = { venueId: [venueId as string] };
+      console.log('[APs] Filter params:', JSON.stringify(params.filters));
+    }
+    
+    const apGroups = await mcpClient.getApGroups(params);
+    
+    console.log('[APs] AP groups raw response:', JSON.stringify(apGroups, null, 2));
+    
+    // Transform data: show "Default AP Group" for groups with empty names and isDefault=true
+    const transformedData = apGroups.data?.map((group: any) => {
+      if ((!group.name || group.name.trim() === '') && group.isDefault) {
+        return {
+          ...group,
+          name: 'Default AP Group'
+        };
+      }
+      return group;
+    }) || [];
+    
+    console.log('[APs] Transformed AP groups:', transformedData.length, 'groups');
+    
+    res.json({
+      success: true,
+      data: {
+        ...apGroups,
+        data: transformedData
+      },
+      message: `Found ${transformedData.length} AP groups`
+    });
+  } catch (error: any) {
+    console.error('[APs] Error fetching AP groups:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Internal server error'
+    });
+  }
+});
+
+/**
+ * GET /api/aps
+ * List all APs from RUCKUS One
+ */
+router.get('/', async (req: Request, res: Response) => {
+  try {
+    const { venueId, searchString, page = '1', pageSize = '100' } = req.query;
+    
+    console.log('[APs] Fetching APs via MCP...');
+    const aps = await mcpClient.getAps({
+      venueId: venueId as string,
+      searchString: searchString as string,
+      page: Number(page),
+      pageSize: Number(pageSize)
+    });
+    
+    res.json({
+      success: true,
+      data: aps,
+      message: `Found ${aps.data?.length || 0} APs`
+    });
+  } catch (error: any) {
+    console.error('[APs] Error fetching APs:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Internal server error'
+    });
+  }
+});
 
 /**
  * POST /api/aps/bulk-add

@@ -1,7 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { VenuesPage } from './components/VenuesPage';
+import { AccessPointsPage } from './components/AccessPointsPage';
+
+type Tab = 'venues' | 'aps';
 
 function App() {
+  const [activeTab, setActiveTab] = useState<Tab>('venues');
+
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
@@ -21,12 +26,37 @@ function App() {
               Connected
             </div>
           </div>
+          
+          {/* Tab Navigation */}
+          <div className="flex gap-4 mt-6 border-b border-gray-200">
+            <button
+              onClick={() => setActiveTab('venues')}
+              className={`px-4 py-2 font-medium transition-colors ${
+                activeTab === 'venues'
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Venues
+            </button>
+            <button
+              onClick={() => setActiveTab('aps')}
+              className={`px-4 py-2 font-medium transition-colors ${
+                activeTab === 'aps'
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Access Points
+            </button>
+          </div>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-6 py-8">
-        <VenuesPage />
+        {activeTab === 'venues' && <VenuesPage />}
+        {activeTab === 'aps' && <AccessPointsPage />}
       </main>
 
       {/* Footer */}

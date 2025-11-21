@@ -36,6 +36,21 @@ export interface Venue {
   updatedAt?: string;
 }
 
+/**
+ * Access Point data structure
+ */
+export interface AccessPoint {
+  serialNumber: string;
+  name: string;
+  venueId: string;
+  venueName?: string;
+  apGroupId: string;
+  apGroupName?: string;
+  status: string;
+  model?: string;
+  macAddress?: string;
+}
+
 export interface Operation {
   id: string;
   type: OperationType;
