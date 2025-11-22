@@ -149,7 +149,7 @@ export const VenuesPage: React.FC = () => {
         <div className="bg-white rounded-lg shadow-small border border-gray-200 p-6">
           <button
             onClick={handleProgressComplete}
-            className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+            className="btn-secondary"
           >
             ← Back to Venues
           </button>
@@ -166,7 +166,7 @@ export const VenuesPage: React.FC = () => {
         <div className="bg-white rounded-lg shadow-small border border-gray-200 p-6">
           <button
             onClick={() => setShowCreateForm(false)}
-            className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+            className="btn-secondary"
           >
             ← Back to Venues
           </button>
@@ -195,7 +195,7 @@ export const VenuesPage: React.FC = () => {
           <button
             onClick={handleRefresh}
             disabled={isRefreshing || isLoading}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+            className="btn-primary flex items-center gap-2"
           >
             <span className={isRefreshing ? 'animate-spin' : ''}>↻</span>
             {isRefreshing ? 'Refreshing...' : 'Refresh'}
@@ -304,14 +304,14 @@ export const VenuesPage: React.FC = () => {
               <button
                 onClick={handleCancelDelete}
                 disabled={isDeleting}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="flex-1 btn-secondary"
               >
                 Cancel
               </button>
               <button
                 onClick={handleConfirmDelete}
                 disabled={isDeleting}
-                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="flex-1 btn-danger"
               >
                 {isDeleting ? 'Starting...' : 'Confirm Delete'}
               </button>
@@ -332,7 +332,7 @@ export const VenuesPage: React.FC = () => {
                 <button
                   onClick={() => setShowCreateForm(true)}
                   disabled={selectedVenueIds.size > 0}
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                  className="btn-success flex items-center gap-2"
                 >
                   <span>➕</span>
                   Create Venues
@@ -340,7 +340,7 @@ export const VenuesPage: React.FC = () => {
                 <button
                   onClick={handleDeleteClick}
                   disabled={selectedVenueIds.size === 0}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                  className="btn-danger flex items-center gap-2"
                 >
                   <span>🗑️</span>
                   Delete Selected {selectedVenueIds.size > 0 && `(${selectedVenueIds.size})`}
@@ -358,7 +358,7 @@ export const VenuesPage: React.FC = () => {
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
+            <div className="overflow-x-auto max-h-[50vh] md:max-h-[60vh] overflow-y-auto">
               <table className="w-full">
                 <thead className="bg-gray-50 sticky top-0 border-b border-gray-200">
                   <tr>

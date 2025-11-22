@@ -138,7 +138,7 @@ export const BulkApForm: React.FC<Props> = ({ onComplete }) => {
         <div className="bg-white rounded-lg shadow-small border border-gray-200 p-6">
           <button
             onClick={resetForm}
-            className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+            className="btn-secondary"
           >
             ← Back to Form
           </button>
@@ -170,7 +170,7 @@ export const BulkApForm: React.FC<Props> = ({ onComplete }) => {
         {/* Venue and AP Group Selection */}
         <div className="bg-white rounded-lg shadow-medium p-6">
           <h3 className="text-lg font-semibold mb-4">Target Location</h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Venue <span className="text-red-500">*</span>
@@ -229,7 +229,7 @@ export const BulkApForm: React.FC<Props> = ({ onComplete }) => {
         {/* Naming Pattern */}
         <div className="bg-white rounded-lg shadow-medium p-6">
           <h3 className="text-lg font-semibold mb-4">Naming Pattern</h3>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Name Prefix
@@ -280,7 +280,7 @@ export const BulkApForm: React.FC<Props> = ({ onComplete }) => {
         {/* Serial Number Pattern */}
         <div className="bg-white rounded-lg shadow-medium p-6">
           <h3 className="text-lg font-semibold mb-4">Serial Number Pattern</h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Starting Serial Number
@@ -320,7 +320,7 @@ export const BulkApForm: React.FC<Props> = ({ onComplete }) => {
         {/* Operation Options */}
         <div className="bg-white rounded-lg shadow-medium p-6">
           <h3 className="text-lg font-semibold mb-4">Operation Options</h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Max Concurrent (1-20)

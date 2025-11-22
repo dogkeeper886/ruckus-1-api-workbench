@@ -388,7 +388,7 @@ export const WlansPage: React.FC = () => {
         <div className="bg-white rounded-lg shadow-small border border-gray-200 p-6">
           <button
             onClick={handleProgressComplete}
-            className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+            className="btn-secondary"
           >
             ← Back to WiFi Networks
           </button>
@@ -405,7 +405,7 @@ export const WlansPage: React.FC = () => {
         <div className="bg-white rounded-lg shadow-small border border-gray-200 p-6">
           <button
             onClick={handleActivateProgressComplete}
-            className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+            className="btn-secondary"
           >
             ← Back to WiFi Networks
           </button>
@@ -422,7 +422,7 @@ export const WlansPage: React.FC = () => {
         <div className="bg-white rounded-lg shadow-small border border-gray-200 p-6">
           <button
             onClick={handleDeactivateProgressComplete}
-            className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+            className="btn-secondary"
           >
             ← Back to WiFi Networks
           </button>
@@ -439,7 +439,7 @@ export const WlansPage: React.FC = () => {
         <div className="bg-white rounded-lg shadow-small border border-gray-200 p-6">
           <button
             onClick={() => setShowCreateForm(false)}
-            className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+            className="btn-secondary"
           >
             ← Back to WiFi Networks
           </button>
@@ -468,7 +468,7 @@ export const WlansPage: React.FC = () => {
           <button
             onClick={handleRefresh}
             disabled={isRefreshing || isLoading}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+            className="btn-primary flex items-center gap-2"
           >
             <span className={isRefreshing ? 'animate-spin' : ''}>↻</span>
             {isRefreshing ? 'Refreshing...' : 'Refresh'}
@@ -577,14 +577,14 @@ export const WlansPage: React.FC = () => {
               <button
                 onClick={handleCancelDelete}
                 disabled={isDeleting}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="flex-1 btn-secondary"
               >
                 Cancel
               </button>
               <button
                 onClick={handleConfirmDelete}
                 disabled={isDeleting}
-                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="flex-1 btn-danger"
               >
                 {isDeleting ? 'Starting...' : 'Confirm Delete'}
               </button>
@@ -596,7 +596,7 @@ export const WlansPage: React.FC = () => {
       {/* Activate Confirmation Dialog */}
       {showActivateDialog && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-large p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg shadow-large p-6 max-w-full sm:max-w-md md:max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <h3 className="text-xl font-bold text-gray-900 mb-4">Activate WiFi Networks</h3>
             <p className="text-gray-700 mb-6">
               Activating <span className="font-bold text-blue-600">{selectedNetworkIds.size}</span> network(s) at selected venues.
@@ -714,14 +714,14 @@ export const WlansPage: React.FC = () => {
               <button
                 onClick={handleCancelActivate}
                 disabled={isActivating}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="flex-1 btn-secondary"
               >
                 Cancel
               </button>
               <button
                 onClick={handleConfirmActivate}
                 disabled={selectedVenueIds.size === 0 || isActivating}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="flex-1 btn-primary"
               >
                 {isActivating ? 'Starting...' : 'Activate Networks'}
               </button>
@@ -733,7 +733,7 @@ export const WlansPage: React.FC = () => {
       {/* Deactivate Confirmation Dialog */}
       {showDeactivateDialog && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-large p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg shadow-large p-6 max-w-full sm:max-w-md md:max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <h3 className="text-xl font-bold text-gray-900 mb-4">Deactivate WiFi Networks</h3>
             <p className="text-gray-700 mb-6">
               Deactivating <span className="font-bold text-yellow-600">{selectedNetworkIds.size}</span> network(s) from selected venues.
@@ -851,14 +851,14 @@ export const WlansPage: React.FC = () => {
               <button
                 onClick={handleCancelDeactivate}
                 disabled={isDeactivating}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="flex-1 btn-secondary"
               >
                 Cancel
               </button>
               <button
                 onClick={handleConfirmDeactivate}
                 disabled={deactivateVenueIds.size === 0 || isDeactivating}
-                className="flex-1 px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="flex-1 btn-warning"
               >
                 {isDeactivating ? 'Starting...' : 'Deactivate Networks'}
               </button>
@@ -879,7 +879,7 @@ export const WlansPage: React.FC = () => {
                 <button
                   onClick={() => setShowCreateForm(true)}
                   disabled={selectedNetworkIds.size > 0}
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                  className="btn-success flex items-center gap-2"
                 >
                   <span>➕</span>
                   Create Network
@@ -887,7 +887,7 @@ export const WlansPage: React.FC = () => {
                 <button
                   onClick={handleActivateClick}
                   disabled={selectedNetworkIds.size !== 1 || getActivatableVenues().length === 0}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                  className="btn-primary flex items-center gap-2"
                 >
                   <span>✓</span>
                   Activate
@@ -895,7 +895,7 @@ export const WlansPage: React.FC = () => {
                 <button
                   onClick={handleDeactivateClick}
                   disabled={selectedNetworkIds.size !== 1 || getDeactivatableVenues().length === 0}
-                  className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                  className="btn-warning flex items-center gap-2"
                 >
                   <span>✗</span>
                   Deactivate
@@ -903,7 +903,7 @@ export const WlansPage: React.FC = () => {
                 <button
                   onClick={handleDeleteClick}
                   disabled={selectedNetworkIds.size === 0 || hasActivatedNetworks()}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                  className="btn-danger flex items-center gap-2"
                 >
                   <span>🗑️</span>
                   Delete {selectedNetworkIds.size > 0 && `(${selectedNetworkIds.size})`}
@@ -921,7 +921,7 @@ export const WlansPage: React.FC = () => {
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
+            <div className="overflow-x-auto max-h-[50vh] md:max-h-[60vh] overflow-y-auto">
               <table className="w-full">
                 <thead className="bg-gray-50 sticky top-0 border-b border-gray-200">
                   <tr>
