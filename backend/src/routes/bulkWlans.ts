@@ -11,8 +11,46 @@ import {
   BulkWlanDeactivateRequest,
   BulkWlanDeleteRequest
 } from '../../../shared/types';
+import { mcpClient } from '../services/mcpClientService';
 
 const router = Router();
+
+/**
+ * GET /api/wlans
+ * List all WiFi networks
+ */
+router.get('/', async (req: Request, res: Response) => {
+  try {
+    console.log('[WLANs] Fetching WiFi networks via MCP...');
+    const networks = await mcpClient.queryWifiNetworks({
+      pageSize: 10000,
+      fields: ['id', 'name', 'ssid', 'nwSubType', 'wlanSecurity', 'portalServiceProfileId', 'vlanId', 'venueApGroups']
+    });
+
+    const networkCount = networks.data?.length || 0;
+    console.log(`[WLANs] Successfully fetched ${networkCount} networks`);
+
+    // Map nwSubType to type for frontend compatibility
+    if (networks.data) {
+      networks.data = networks.data.map((network: any) => ({
+        ...network,
+        type: network.nwSubType || network.type
+      }));
+    }
+
+    res.json({
+      success: true,
+      data: networks,
+      message: `Found ${networkCount} WiFi networks`
+    });
+  } catch (error: any) {
+    console.error('[WLANs] Error fetching networks:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Internal server error'
+    });
+  }
+});
 
 /**
  * POST /api/wlans/bulk-create

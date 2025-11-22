@@ -14,6 +14,7 @@ import {
   OperationsResponse,
   BulkOperationSession,
   Venue,
+  WifiNetwork,
   AccessPoint,
   ApiLogEntry
 } from '../../../shared/types';
@@ -123,6 +124,12 @@ class ApiService {
   // Venues operations
   async getVenues(): Promise<Venue[]> {
     const response = await this.client.get('/venues');
+    return response.data.data?.data || [];
+  }
+
+  // WLAN operations
+  async getWlans(): Promise<WifiNetwork[]> {
+    const response = await this.client.get('/wlans');
     return response.data.data?.data || [];
   }
 

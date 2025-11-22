@@ -51,6 +51,28 @@ export interface AccessPoint {
   macAddress?: string;
 }
 
+/**
+ * WiFi Network data structure
+ */
+export interface WifiNetwork {
+  id: string;
+  name: string;
+  ssid: string;
+  type: 'psk' | 'enterprise' | 'open' | 'guest';
+  nwSubType?: string; // Alternative field name used in list queries
+  wlanSecurity?: string;
+  portalServiceProfileId?: string;
+  status?: string;
+  vlanId?: number;
+  venueApGroups?: Array<{
+    venueId: string;
+    venueName?: string;
+    apGroupIds?: string[];
+  }>;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface Operation {
   id: string;
   type: OperationType;
