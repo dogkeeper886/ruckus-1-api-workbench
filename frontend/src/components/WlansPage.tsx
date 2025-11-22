@@ -31,7 +31,7 @@ export const WlansPage: React.FC = () => {
 
   // Activate dialog state
   const [showActivateDialog, setShowActivateDialog] = useState(false);
-  const [selectedVenueId, setSelectedVenueId] = useState('');
+  const [selectedVenueIds, setSelectedVenueIds] = useState<Set<string>>(new Set());
   const [portalProfileId, setPortalProfileId] = useState('');
   const [isAllApGroups, setIsAllApGroups] = useState(true);
   const [radioType, setRadioType] = useState('Both');
@@ -40,6 +40,15 @@ export const WlansPage: React.FC = () => {
   const [activateWaitMode, setActivateWaitMode] = useState<'track' | 'fire'>('track');
   const [isActivating, setIsActivating] = useState(false);
   const [activateSessionId, setActivateSessionId] = useState<string | null>(null);
+
+  // Deactivate dialog state
+  const [showDeactivateDialog, setShowDeactivateDialog] = useState(false);
+  const [deactivateVenueIds, setDeactivateVenueIds] = useState<Set<string>>(new Set());
+  const [deactivateMaxConcurrent, setDeactivateMaxConcurrent] = useState(5);
+  const [deactivateDelayMs, setDeactivateDelayMs] = useState(500);
+  const [deactivateWaitMode, setDeactivateWaitMode] = useState<'track' | 'fire'>('track');
+  const [isDeactivating, setIsDeactivating] = useState(false);
+  const [deactivateSessionId, setDeactivateSessionId] = useState<string | null>(null);
 
   const fetchWlans = async () => {
     try {
@@ -171,15 +180,25 @@ export const WlansPage: React.FC = () => {
     }
   };
 
+  const handleToggleVenue = (venueId: string) => {
+    const newSelection = new Set(selectedVenueIds);
+    if (newSelection.has(venueId)) {
+      newSelection.delete(venueId);
+    } else {
+      newSelection.add(venueId);
+    }
+    setSelectedVenueIds(newSelection);
+  };
+
   const handleCancelActivate = () => {
     setShowActivateDialog(false);
-    setSelectedVenueId('');
+    setSelectedVenueIds(new Set());
     setPortalProfileId('');
   };
 
   const handleConfirmActivate = async () => {
-    if (!selectedVenueId) {
-      setError('Please select a venue');
+    if (selectedVenueIds.size === 0) {
+      setError('Please select at least one venue');
       return;
     }
 
@@ -192,15 +211,18 @@ export const WlansPage: React.FC = () => {
         radioTypes.push(radioType);
       }
 
+      // Build venue configs for each selected venue
+      const venueConfigs = Array.from(selectedVenueIds).map(venueId => ({
+        venueId,
+        isAllApGroups,
+        allApGroupsRadio: radioType,
+        allApGroupsRadioTypes: radioTypes,
+        scheduler: { type: 'ALWAYS_ON' }
+      }));
+
       const request = {
         networkIds: Array.from(selectedNetworkIds),
-        venueConfigs: [{
-          venueId: selectedVenueId,
-          isAllApGroups,
-          allApGroupsRadio: radioType,
-          allApGroupsRadioTypes: radioTypes,
-          scheduler: { type: 'ALWAYS_ON' }
-        }],
+        venueConfigs,
         portalServiceProfileId: portalProfileId || undefined,
         options: {
           maxConcurrent: activateMaxConcurrent,
@@ -239,6 +261,73 @@ export const WlansPage: React.FC = () => {
     handleRefresh();
   };
 
+  const handleDeactivateClick = () => {
+    if (selectedNetworkIds.size > 0) {
+      setShowDeactivateDialog(true);
+    }
+  };
+
+  const handleToggleDeactivateVenue = (venueId: string) => {
+    const newSelection = new Set(deactivateVenueIds);
+    if (newSelection.has(venueId)) {
+      newSelection.delete(venueId);
+    } else {
+      newSelection.add(venueId);
+    }
+    setDeactivateVenueIds(newSelection);
+  };
+
+  const handleCancelDeactivate = () => {
+    setShowDeactivateDialog(false);
+    setDeactivateVenueIds(new Set());
+  };
+
+  const handleConfirmDeactivate = async () => {
+    if (deactivateVenueIds.size === 0) {
+      setError('Please select at least one venue');
+      return;
+    }
+
+    setIsDeactivating(true);
+    try {
+      const request = {
+        networkIds: Array.from(selectedNetworkIds),
+        venueIds: Array.from(deactivateVenueIds),
+        options: {
+          maxConcurrent: deactivateMaxConcurrent,
+          delayMs: deactivateDelayMs
+        }
+      };
+
+      const response = await apiService.bulkDeactivateWlans(request);
+
+      if (response.success && response.data) {
+        if (deactivateWaitMode === 'track') {
+          setDeactivateSessionId(response.data.sessionId);
+          setShowDeactivateDialog(false);
+        } else {
+          setShowDeactivateDialog(false);
+          setSelectedNetworkIds(new Set());
+          setTimeout(() => {
+            handleRefresh();
+          }, 1000);
+        }
+      } else {
+        setError(response.error || 'Failed to start deactivate operation');
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.error || err.message || 'Failed to deactivate networks');
+    } finally {
+      setIsDeactivating(false);
+    }
+  };
+
+  const handleDeactivateProgressComplete = () => {
+    setDeactivateSessionId(null);
+    setSelectedNetworkIds(new Set());
+    handleRefresh();
+  };
+
   const getTypeBadge = (type: string) => {
     switch (type) {
       case 'guest':
@@ -267,6 +356,44 @@ export const WlansPage: React.FC = () => {
         badge: 'bg-gray-100 text-gray-800'
       };
     }
+  };
+
+  // Get venues where selected networks can be activated (not already there)
+  const getActivatableVenues = () => {
+    const selectedNetworks = wlans.filter(w => selectedNetworkIds.has(w.id));
+    if (selectedNetworks.length === 0) return [];
+
+    // For each venue, check if ANY selected network is already activated there
+    return venues.filter(venue => {
+      // Check if this venue already has any of the selected networks
+      const hasAnyNetwork = selectedNetworks.some(network =>
+        network.venueApGroups?.some(vag => vag.venueId === venue.id)
+      );
+      // Only show venues where none of the selected networks are activated
+      return !hasAnyNetwork;
+    });
+  };
+
+  // Get venues where ALL selected networks are currently activated
+  const getDeactivatableVenues = () => {
+    const selectedNetworks = wlans.filter(w => selectedNetworkIds.has(w.id));
+    if (selectedNetworks.length === 0) return [];
+
+    // For each venue, check if ALL selected networks are activated there
+    return venues.filter(venue => {
+      // All selected networks must be at this venue
+      return selectedNetworks.every(network =>
+        network.venueApGroups?.some(vag => vag.venueId === venue.id)
+      );
+    });
+  };
+
+  // Check if any selected network is activated at any venue
+  const hasActivatedNetworks = () => {
+    const selectedNetworks = wlans.filter(w => selectedNetworkIds.has(w.id));
+    return selectedNetworks.some(network =>
+      network.venueApGroups && network.venueApGroups.length > 0
+    );
   };
 
   // If showing progress tracking view for delete
@@ -299,6 +426,23 @@ export const WlansPage: React.FC = () => {
           </button>
         </div>
         <OperationProgress sessionId={activateSessionId} />
+      </div>
+    );
+  }
+
+  // If showing progress tracking view for deactivate
+  if (deactivateSessionId) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <button
+            onClick={handleDeactivateProgressComplete}
+            className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+          >
+            ← Back to WiFi Networks
+          </button>
+        </div>
+        <OperationProgress sessionId={deactivateSessionId} />
       </div>
     );
   }
@@ -470,123 +614,161 @@ export const WlansPage: React.FC = () => {
           <div className="bg-white rounded-lg shadow-xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <h3 className="text-xl font-bold text-gray-900 mb-4">Activate WiFi Networks</h3>
             <p className="text-gray-700 mb-6">
-              Activating <span className="font-bold text-blue-600">{selectedNetworkIds.size}</span> network(s) at a venue.
+              Activating <span className="font-bold text-blue-600">{selectedNetworkIds.size}</span> network(s) at selected venues.
             </p>
 
-            <div className="space-y-4 mb-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Select Venue <span className="text-red-600">*</span>
-                </label>
-                <select
-                  value={selectedVenueId}
-                  onChange={(e) => setSelectedVenueId(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  required
-                >
-                  <option value="">Choose a venue...</option>
-                  {venues.map(v => (
-                    <option key={v.id} value={v.id}>{v.name}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Portal Service Profile ID (Optional)
-                </label>
-                <input
-                  type="text"
-                  value={portalProfileId}
-                  onChange={(e) => setPortalProfileId(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="e.g., 12345678-1234-1234-1234-123456789012"
-                />
-                <p className="text-xs text-gray-500 mt-1">Required for guest networks with portal service</p>
-              </div>
-
-              <div>
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={isAllApGroups}
-                    onChange={(e) => setIsAllApGroups(e.target.checked)}
-                    className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-2 focus:ring-blue-500 mr-2"
-                  />
-                  <span className="text-sm font-medium text-gray-700">Activate on all AP groups</span>
-                </label>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Radio Type
-                </label>
-                <select
-                  value={radioType}
-                  onChange={(e) => setRadioType(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="Both">Both 2.4GHz & 5GHz</option>
-                  <option value="2.4-GHz">2.4GHz Only</option>
-                  <option value="5-GHz">5GHz Only</option>
-                  <option value="6-GHz">6GHz Only</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Max Concurrent (1-20)
-                </label>
-                <input
-                  type="number"
-                  value={activateMaxConcurrent}
-                  onChange={(e) => setActivateMaxConcurrent(Number(e.target.value))}
-                  min="1"
-                  max="20"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Delay Between Ops (ms)
-                </label>
-                <input
-                  type="number"
-                  value={activateDelayMs}
-                  onChange={(e) => setActivateDelayMs(Number(e.target.value))}
-                  min="0"
-                  max="10000"
-                  step="100"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Wait Mode
-                </label>
-                <div className="space-y-2">
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      value="track"
-                      checked={activateWaitMode === 'track'}
-                      onChange={(e) => setActivateWaitMode(e.target.value as 'track' | 'fire')}
-                      className="mr-2"
-                    />
-                    <span className="text-sm text-gray-700">Track Progress - Show detailed progress</span>
+            <div className="space-y-6 mb-6">
+              {/* Venue Selection Section */}
+              <div className="bg-gradient-to-b from-blue-50 to-white rounded-lg p-4 shadow-sm border border-blue-100">
+                <h4 className="text-sm font-semibold text-gray-900 mb-3">Target Venues</h4>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Select Venues <span className="text-red-600">*</span>
+                    {selectedVenueIds.size > 0 && (
+                      <span className="ml-2 text-blue-600 font-normal">
+                        ({selectedVenueIds.size} selected)
+                      </span>
+                    )}
                   </label>
-                  <label className="flex items-center">
+                  <div className="border border-gray-300 rounded-lg max-h-48 overflow-y-auto bg-white shadow-inner">
+                    {getActivatableVenues().length === 0 ? (
+                      <div className="px-3 py-4 text-sm text-gray-500 text-center">
+                        {venues.length === 0
+                          ? 'No venues available'
+                          : 'Selected networks are already activated at all venues'}
+                      </div>
+                    ) : (
+                      <div className="divide-y divide-gray-200">
+                        {getActivatableVenues().map(venue => (
+                          <label
+                            key={venue.id}
+                            className="flex items-center px-3 py-2.5 hover:bg-blue-50 cursor-pointer transition-colors"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={selectedVenueIds.has(venue.id)}
+                              onChange={() => handleToggleVenue(venue.id)}
+                              className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-2 focus:ring-blue-500 mr-3"
+                            />
+                            <span className="text-sm text-gray-900">{venue.name}</span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Network Configuration Section */}
+              <div className="bg-gradient-to-b from-gray-50 to-white rounded-lg p-4 shadow-sm border border-gray-200">
+                <h4 className="text-sm font-semibold text-gray-900 mb-3">Network Configuration</h4>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Portal Service Profile ID (Optional)
+                    </label>
                     <input
-                      type="radio"
-                      value="fire"
-                      checked={activateWaitMode === 'fire'}
-                      onChange={(e) => setActivateWaitMode(e.target.value as 'track' | 'fire')}
-                      className="mr-2"
+                      type="text"
+                      value={portalProfileId}
+                      onChange={(e) => setPortalProfileId(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="e.g., 12345678-1234-1234-1234-123456789012"
                     />
-                    <span className="text-sm text-gray-700">Fire and Forget - Start and return immediately</span>
-                  </label>
+                    <p className="text-xs text-gray-500 mt-1">Required for guest networks with portal service</p>
+                  </div>
+
+                  <div>
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={isAllApGroups}
+                        onChange={(e) => setIsAllApGroups(e.target.checked)}
+                        className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-2 focus:ring-blue-500 mr-2"
+                      />
+                      <span className="text-sm font-medium text-gray-700">Activate on all AP groups</span>
+                    </label>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Radio Type
+                    </label>
+                    <select
+                      value={radioType}
+                      onChange={(e) => setRadioType(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="Both">Both 2.4GHz & 5GHz</option>
+                      <option value="2.4-GHz">2.4GHz Only</option>
+                      <option value="5-GHz">5GHz Only</option>
+                      <option value="6-GHz">6GHz Only</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Operation Options Section */}
+              <div className="bg-gradient-to-b from-gray-50 to-white rounded-lg p-4 shadow-sm border border-gray-200">
+                <h4 className="text-sm font-semibold text-gray-900 mb-3">Operation Options</h4>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Max Concurrent (1-20)
+                      </label>
+                      <input
+                        type="number"
+                        value={activateMaxConcurrent}
+                        onChange={(e) => setActivateMaxConcurrent(Number(e.target.value))}
+                        min="1"
+                        max="20"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Delay Between Ops (ms)
+                      </label>
+                      <input
+                        type="number"
+                        value={activateDelayMs}
+                        onChange={(e) => setActivateDelayMs(Number(e.target.value))}
+                        min="0"
+                        max="10000"
+                        step="100"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Wait Mode
+                    </label>
+                    <div className="space-y-2">
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          value="track"
+                          checked={activateWaitMode === 'track'}
+                          onChange={(e) => setActivateWaitMode(e.target.value as 'track' | 'fire')}
+                          className="mr-2"
+                        />
+                        <span className="text-sm text-gray-700">Track Progress - Show detailed progress</span>
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          value="fire"
+                          checked={activateWaitMode === 'fire'}
+                          onChange={(e) => setActivateWaitMode(e.target.value as 'track' | 'fire')}
+                          className="mr-2"
+                        />
+                        <span className="text-sm text-gray-700">Fire and Forget - Start and return immediately</span>
+                      </label>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -601,10 +783,147 @@ export const WlansPage: React.FC = () => {
               </button>
               <button
                 onClick={handleConfirmActivate}
-                disabled={!selectedVenueId || isActivating}
+                disabled={selectedVenueIds.size === 0 || isActivating}
                 className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {isActivating ? 'Starting...' : 'Activate Networks'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Deactivate Confirmation Dialog */}
+      {showDeactivateDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Deactivate WiFi Networks</h3>
+            <p className="text-gray-700 mb-6">
+              Deactivating <span className="font-bold text-yellow-600">{selectedNetworkIds.size}</span> network(s) from selected venues.
+            </p>
+
+            <div className="space-y-6 mb-6">
+              {/* Venue Selection Section */}
+              <div className="bg-gradient-to-b from-yellow-50 to-white rounded-lg p-4 shadow-sm border border-yellow-100">
+                <h4 className="text-sm font-semibold text-gray-900 mb-3">Target Venues</h4>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Select Venues <span className="text-red-600">*</span>
+                    {deactivateVenueIds.size > 0 && (
+                      <span className="ml-2 text-yellow-600 font-normal">
+                        ({deactivateVenueIds.size} selected)
+                      </span>
+                    )}
+                  </label>
+                  <div className="border border-gray-300 rounded-lg max-h-48 overflow-y-auto bg-white shadow-inner">
+                    {getDeactivatableVenues().length === 0 ? (
+                      <div className="px-3 py-4 text-sm text-gray-500 text-center">
+                        {venues.length === 0
+                          ? 'No venues available'
+                          : 'Selected networks are not activated at any common venues'}
+                      </div>
+                    ) : (
+                      <div className="divide-y divide-gray-200">
+                        {getDeactivatableVenues().map(venue => (
+                          <label
+                            key={venue.id}
+                            className="flex items-center px-3 py-2.5 hover:bg-yellow-50 cursor-pointer transition-colors"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={deactivateVenueIds.has(venue.id)}
+                              onChange={() => handleToggleDeactivateVenue(venue.id)}
+                              className="h-4 w-4 text-yellow-600 rounded border-gray-300 focus:ring-2 focus:ring-yellow-500 mr-3"
+                            />
+                            <span className="text-sm text-gray-900">{venue.name}</span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Operation Options Section */}
+              <div className="bg-gradient-to-b from-gray-50 to-white rounded-lg p-4 shadow-sm border border-gray-200">
+                <h4 className="text-sm font-semibold text-gray-900 mb-3">Operation Options</h4>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Max Concurrent (1-20)
+                      </label>
+                      <input
+                        type="number"
+                        value={deactivateMaxConcurrent}
+                        onChange={(e) => setDeactivateMaxConcurrent(Number(e.target.value))}
+                        min="1"
+                        max="20"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Delay Between Ops (ms)
+                      </label>
+                      <input
+                        type="number"
+                        value={deactivateDelayMs}
+                        onChange={(e) => setDeactivateDelayMs(Number(e.target.value))}
+                        min="0"
+                        max="10000"
+                        step="100"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Wait Mode
+                    </label>
+                    <div className="space-y-2">
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          value="track"
+                          checked={deactivateWaitMode === 'track'}
+                          onChange={(e) => setDeactivateWaitMode(e.target.value as 'track' | 'fire')}
+                          className="mr-2"
+                        />
+                        <span className="text-sm text-gray-700">Track Progress - Show detailed progress</span>
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          value="fire"
+                          checked={deactivateWaitMode === 'fire'}
+                          onChange={(e) => setDeactivateWaitMode(e.target.value as 'track' | 'fire')}
+                          className="mr-2"
+                        />
+                        <span className="text-sm text-gray-700">Fire and Forget - Start and return immediately</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={handleCancelDeactivate}
+                disabled={isDeactivating}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmDeactivate}
+                disabled={deactivateVenueIds.size === 0 || isDeactivating}
+                className="flex-1 px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {isDeactivating ? 'Starting...' : 'Deactivate Networks'}
               </button>
             </div>
           </div>
@@ -622,26 +941,35 @@ export const WlansPage: React.FC = () => {
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowCreateForm(true)}
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+                  disabled={selectedNetworkIds.size > 0}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
                 >
                   <span>➕</span>
                   Create Network
                 </button>
                 <button
                   onClick={handleActivateClick}
-                  disabled={selectedNetworkIds.size === 0}
+                  disabled={selectedNetworkIds.size !== 1 || getActivatableVenues().length === 0}
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
                 >
                   <span>✓</span>
-                  Activate Selected {selectedNetworkIds.size > 0 && `(${selectedNetworkIds.size})`}
+                  Activate
+                </button>
+                <button
+                  onClick={handleDeactivateClick}
+                  disabled={selectedNetworkIds.size !== 1 || getDeactivatableVenues().length === 0}
+                  className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                >
+                  <span>✗</span>
+                  Deactivate
                 </button>
                 <button
                   onClick={handleDeleteClick}
-                  disabled={selectedNetworkIds.size === 0}
+                  disabled={selectedNetworkIds.size === 0 || hasActivatedNetworks()}
                   className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
                 >
                   <span>🗑️</span>
-                  Delete Selected {selectedNetworkIds.size > 0 && `(${selectedNetworkIds.size})`}
+                  Delete {selectedNetworkIds.size > 0 && `(${selectedNetworkIds.size})`}
                 </button>
               </div>
             </div>
@@ -678,12 +1006,6 @@ export const WlansPage: React.FC = () => {
                       Type
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Security
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Portal Profile
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Status
                     </th>
                   </tr>
@@ -716,16 +1038,6 @@ export const WlansPage: React.FC = () => {
                         <span className={`px-2 py-1 text-xs font-medium rounded-full ${getTypeBadge(network.type)}`}>
                           {network.type}
                         </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-600">
-                          {network.wlanSecurity}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-600 font-mono">
-                          {network.portalServiceProfileId || 'N/A'}
-                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-2 py-1 text-xs font-medium rounded-full ${getNetworkStatus(network).badge}`}>
