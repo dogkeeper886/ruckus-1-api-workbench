@@ -279,7 +279,8 @@ export const AccessPointsPage: React.FC = () => {
               <div className="flex gap-3">
                 <button
                   onClick={handleAddClick}
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+                  disabled={selectedApSerials.size > 0}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
                 >
                   <span>➕</span>
                   Add APs
