@@ -68,7 +68,7 @@ export const BulkVenueForm: React.FC<Props> = ({ onComplete }) => {
   if (sessionId) {
     return (
       <div className="space-y-6">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-lg shadow-small border border-gray-200 p-6">
           <button
             onClick={resetForm}
             className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
@@ -98,7 +98,7 @@ export const BulkVenueForm: React.FC<Props> = ({ onComplete }) => {
       )}
 
       <form onSubmit={handleCreateSubmit} className="space-y-6">
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white rounded-lg shadow-medium p-6">
             <h3 className="text-lg font-semibold mb-4">Naming Pattern</h3>
             <div className="grid grid-cols-3 gap-4">
               <div>
@@ -142,7 +142,7 @@ export const BulkVenueForm: React.FC<Props> = ({ onComplete }) => {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white rounded-lg shadow-medium p-6">
             <h3 className="text-lg font-semibold mb-4">Venue Details</h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -187,7 +187,7 @@ export const BulkVenueForm: React.FC<Props> = ({ onComplete }) => {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white rounded-lg shadow-medium p-6">
             <h3 className="text-lg font-semibold mb-4">Operation Options</h3>
             <div className="grid grid-cols-2 gap-4">
               <div>

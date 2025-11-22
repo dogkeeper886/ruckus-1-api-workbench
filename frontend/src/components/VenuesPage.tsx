@@ -146,7 +146,7 @@ export const VenuesPage: React.FC = () => {
   if (deleteSessionId) {
     return (
       <div className="space-y-6">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-lg shadow-small border border-gray-200 p-6">
           <button
             onClick={handleProgressComplete}
             className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
@@ -163,7 +163,7 @@ export const VenuesPage: React.FC = () => {
   if (showCreateForm) {
     return (
       <div className="space-y-6">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-lg shadow-small border border-gray-200 p-6">
           <button
             onClick={() => setShowCreateForm(false)}
             className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
@@ -179,7 +179,7 @@ export const VenuesPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="bg-white rounded-lg shadow-small border border-gray-200 p-6">
         <div className="flex justify-between items-center">
           <div>
             <h2 className="text-2xl font-bold text-gray-900">Venues</h2>
@@ -205,7 +205,7 @@ export const VenuesPage: React.FC = () => {
 
       {/* Error Message */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div className="bg-red-50 border border-red-200 rounded-lg shadow-small p-4">
           <div className="flex items-start gap-3">
             <span className="text-red-600 text-xl">⚠</span>
             <div className="flex-1">
@@ -224,7 +224,7 @@ export const VenuesPage: React.FC = () => {
 
       {/* Loading State */}
       {isLoading && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12">
+        <div className="bg-white rounded-lg shadow-small border border-gray-200 p-12">
           <div className="flex flex-col items-center justify-center gap-4">
             <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-blue-600"></div>
             <p className="text-gray-600">Loading venues...</p>
@@ -235,7 +235,7 @@ export const VenuesPage: React.FC = () => {
       {/* Delete Confirmation Dialog */}
       {showDeleteDialog && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+          <div className="bg-white rounded-lg shadow-large p-6 max-w-md w-full mx-4">
             <h3 className="text-xl font-bold text-gray-900 mb-4">Delete Venues</h3>
             <p className="text-gray-700 mb-6">
               You are about to delete <span className="font-bold text-red-600">{selectedVenueIds.size}</span> venue(s). This action cannot be undone.
@@ -322,7 +322,7 @@ export const VenuesPage: React.FC = () => {
 
       {/* Venues Table */}
       {!isLoading && !error && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-lg shadow-small border border-gray-200 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-bold text-gray-900">

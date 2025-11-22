@@ -99,7 +99,7 @@ export const BulkWlanForm: React.FC<Props> = ({ onComplete }) => {
   if (sessionId) {
     return (
       <div className="space-y-6">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-lg shadow-small border border-gray-200 p-6">
           <button
             onClick={resetForm}
             className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
@@ -130,7 +130,7 @@ export const BulkWlanForm: React.FC<Props> = ({ onComplete }) => {
 
       <form onSubmit={handleCreateSubmit} className="space-y-6">
         {/* Network Naming */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-lg shadow-medium p-6">
           <h3 className="text-lg font-semibold mb-4">Network Naming</h3>
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -185,7 +185,7 @@ export const BulkWlanForm: React.FC<Props> = ({ onComplete }) => {
         </div>
 
         {/* Network Configuration */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-lg shadow-medium p-6">
           <h3 className="text-lg font-semibold mb-4">Network Configuration</h3>
           <div className="space-y-4">
             <div>
@@ -244,7 +244,7 @@ export const BulkWlanForm: React.FC<Props> = ({ onComplete }) => {
         </div>
 
         {/* Operation Options */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-lg shadow-medium p-6">
           <h3 className="text-lg font-semibold mb-4">Operation Options</h3>
           <div className="grid grid-cols-2 gap-4">
             <div>
