@@ -502,6 +502,18 @@ class MCPClientService {
     return this.callTool('update_wifi_network_portal_service_profile', params);
   }
 
+  async queryPortalServiceProfiles(params?: {
+    filters?: any;
+    searchString?: string;
+    searchTargetFields?: string[];
+    page?: number;
+    pageSize?: number;
+    sortField?: string;
+    sortOrder?: string;
+  }): Promise<any> {
+    return this.callTool('query_portal_service_profiles', params || {});
+  }
+
   async updateWifiNetworkRadiusServerProfileSettings(params: {
     networkId: string;
     enableAccountingProxy?: boolean;

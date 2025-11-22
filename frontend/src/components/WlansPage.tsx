@@ -32,9 +32,6 @@ export const WlansPage: React.FC = () => {
   // Activate dialog state
   const [showActivateDialog, setShowActivateDialog] = useState(false);
   const [selectedVenueIds, setSelectedVenueIds] = useState<Set<string>>(new Set());
-  const [portalProfileId, setPortalProfileId] = useState('');
-  const [isAllApGroups, setIsAllApGroups] = useState(true);
-  const [radioType, setRadioType] = useState('Both');
   const [activateMaxConcurrent, setActivateMaxConcurrent] = useState(5);
   const [activateDelayMs, setActivateDelayMs] = useState(500);
   const [activateWaitMode, setActivateWaitMode] = useState<'track' | 'fire'>('track');
@@ -193,7 +190,6 @@ export const WlansPage: React.FC = () => {
   const handleCancelActivate = () => {
     setShowActivateDialog(false);
     setSelectedVenueIds(new Set());
-    setPortalProfileId('');
   };
 
   const handleConfirmActivate = async () => {
@@ -204,26 +200,15 @@ export const WlansPage: React.FC = () => {
 
     setIsActivating(true);
     try {
-      const radioTypes: string[] = [];
-      if (radioType === 'Both') {
-        radioTypes.push('2.4-GHz', '5-GHz');
-      } else {
-        radioTypes.push(radioType);
-      }
-
       // Build venue configs for each selected venue
       const venueConfigs = Array.from(selectedVenueIds).map(venueId => ({
         venueId,
-        isAllApGroups,
-        allApGroupsRadio: radioType,
-        allApGroupsRadioTypes: radioTypes,
         scheduler: { type: 'ALWAYS_ON' }
       }));
 
       const request = {
         networkIds: Array.from(selectedNetworkIds),
         venueConfigs,
-        portalServiceProfileId: portalProfileId || undefined,
         options: {
           maxConcurrent: activateMaxConcurrent,
           delayMs: activateDelayMs
@@ -655,54 +640,6 @@ export const WlansPage: React.FC = () => {
                         ))}
                       </div>
                     )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Network Configuration Section */}
-              <div className="bg-gradient-to-b from-gray-50 to-white rounded-lg p-4 shadow-sm border border-gray-200">
-                <h4 className="text-sm font-semibold text-gray-900 mb-3">Network Configuration</h4>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Portal Service Profile ID (Optional)
-                    </label>
-                    <input
-                      type="text"
-                      value={portalProfileId}
-                      onChange={(e) => setPortalProfileId(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="e.g., 12345678-1234-1234-1234-123456789012"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">Required for guest networks with portal service</p>
-                  </div>
-
-                  <div>
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={isAllApGroups}
-                        onChange={(e) => setIsAllApGroups(e.target.checked)}
-                        className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-2 focus:ring-blue-500 mr-2"
-                      />
-                      <span className="text-sm font-medium text-gray-700">Activate on all AP groups</span>
-                    </label>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Radio Type
-                    </label>
-                    <select
-                      value={radioType}
-                      onChange={(e) => setRadioType(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    >
-                      <option value="Both">Both 2.4GHz & 5GHz</option>
-                      <option value="2.4-GHz">2.4GHz Only</option>
-                      <option value="5-GHz">5GHz Only</option>
-                      <option value="6-GHz">6GHz Only</option>
-                    </select>
                   </div>
                 </div>
               </div>

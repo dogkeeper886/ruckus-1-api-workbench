@@ -149,16 +149,13 @@ export interface BulkVenueDeleteRequest {
 // WLAN-specific types
 export interface BulkWlanCreateRequest {
   namePrefix: string;
-  nameSuffix: string;
   ssidPrefix: string;
-  ssidSuffix: string;
   count: number;
   startStep: number;
-  type: 'psk' | 'enterprise' | 'open' | 'guest';
+  type: 'psk' | 'guest';
   wlanSecurity: string;
   passphrase?: string;
   portalServiceProfileId?: string;
-  vlanId?: number;
   options: BulkOperationOptions;
 }
 

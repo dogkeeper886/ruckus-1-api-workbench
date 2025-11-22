@@ -133,6 +133,11 @@ class ApiService {
     return response.data.data?.data || [];
   }
 
+  async getPortalProfiles(): Promise<any[]> {
+    const response = await this.client.get('/wlans/portal-profiles');
+    return response.data.data?.content || [];
+  }
+
   // AP operations
   async getAps(params?: { venueId?: string; searchString?: string }): Promise<any> {
     const response = await this.client.get('/aps', { params });

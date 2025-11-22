@@ -53,6 +53,36 @@ router.get('/', async (req: Request, res: Response) => {
 });
 
 /**
+ * GET /api/wlans/portal-profiles
+ * List all portal service profiles
+ */
+router.get('/portal-profiles', async (req: Request, res: Response) => {
+  try {
+    console.log('[Portal Profiles] Fetching portal service profiles via MCP...');
+    const profiles = await mcpClient.queryPortalServiceProfiles({
+      pageSize: 1000,
+      sortField: 'name',
+      sortOrder: 'ASC'
+    });
+
+    const profileCount = profiles.data?.length || 0;
+    console.log(`[Portal Profiles] Successfully fetched ${profileCount} profiles`);
+
+    res.json({
+      success: true,
+      data: profiles,
+      message: `Found ${profileCount} portal service profiles`
+    });
+  } catch (error: any) {
+    console.error('[Portal Profiles] Error fetching profiles:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Internal server error'
+    });
+  }
+});
+
+/**
  * POST /api/wlans/bulk-create
  * Create multiple WLANs
  */

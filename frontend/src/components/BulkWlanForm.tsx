@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { apiService } from '../services/api';
 import { BulkWlanCreateRequest } from '../../../shared/types';
 import { OperationProgress } from './OperationProgress';
@@ -11,19 +11,16 @@ export const BulkWlanForm: React.FC<Props> = ({ onComplete }) => {
   const [sessionId, setSessionId] = useState<string | null>(null);
 
   // Create form state - Naming
-  const [namePrefix, setNamePrefix] = useState('GuestNet-');
-  const [nameSuffix, setNameSuffix] = useState('');
-  const [ssidPrefix, setSsidPrefix] = useState('Guest-');
-  const [ssidSuffix, setSsidSuffix] = useState('');
+  const [namePrefix, setNamePrefix] = useState('Network-');
+  const [ssidPrefix, setSsidPrefix] = useState('WiFi-');
   const [count, setCount] = useState(10);
   const [startStep, setStartStep] = useState(1);
 
   // Network configuration
-  const [type, setType] = useState<'psk' | 'enterprise' | 'open' | 'guest'>('guest');
-  const [wlanSecurity, setWlanSecurity] = useState('WPA2Personal');
+  const [type, setType] = useState<'psk' | 'guest'>('psk');
   const [passphrase, setPassphrase] = useState('');
   const [portalServiceProfileId, setPortalServiceProfileId] = useState('');
-  const [vlanId, setVlanId] = useState<number | undefined>(undefined);
+  const [portalProfiles, setPortalProfiles] = useState<any[]>([]);
 
   // Options
   const [maxConcurrent, setMaxConcurrent] = useState(5);
@@ -31,6 +28,19 @@ export const BulkWlanForm: React.FC<Props> = ({ onComplete }) => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Fetch portal profiles on mount
+  useEffect(() => {
+    const fetchPortalProfiles = async () => {
+      try {
+        const profiles = await apiService.getPortalProfiles();
+        setPortalProfiles(profiles);
+      } catch (err) {
+        console.error('Error fetching portal profiles:', err);
+      }
+    };
+    fetchPortalProfiles();
+  }, []);
 
   const handleCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,18 +60,18 @@ export const BulkWlanForm: React.FC<Props> = ({ onComplete }) => {
     setIsSubmitting(true);
 
     try {
+      // Auto-set wlanSecurity based on network type
+      const wlanSecurity = type === 'psk' ? 'WPA2Personal' : 'None';
+
       const request: BulkWlanCreateRequest = {
         namePrefix,
-        nameSuffix,
         ssidPrefix,
-        ssidSuffix,
         count,
         startStep,
         type,
         wlanSecurity,
         passphrase: type === 'psk' ? passphrase : undefined,
         portalServiceProfileId: type === 'guest' ? portalServiceProfileId : undefined,
-        vlanId,
         options: {
           maxConcurrent,
           delayMs
@@ -122,7 +132,7 @@ export const BulkWlanForm: React.FC<Props> = ({ onComplete }) => {
         {/* Network Naming */}
         <div className="bg-white rounded-lg shadow p-6">
           <h3 className="text-lg font-semibold mb-4">Network Naming</h3>
-          <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Name Prefix</label>
               <input
@@ -131,15 +141,6 @@ export const BulkWlanForm: React.FC<Props> = ({ onComplete }) => {
                 onChange={(e) => setNamePrefix(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Name Suffix</label>
-              <input
-                type="text"
-                value={nameSuffix}
-                onChange={(e) => setNameSuffix(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
             <div>
@@ -152,17 +153,6 @@ export const BulkWlanForm: React.FC<Props> = ({ onComplete }) => {
                 required
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">SSID Suffix</label>
-              <input
-                type="text"
-                value={ssidSuffix}
-                onChange={(e) => setSsidSuffix(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Start Step</label>
               <input
@@ -189,7 +179,7 @@ export const BulkWlanForm: React.FC<Props> = ({ onComplete }) => {
           </div>
           <div className="mt-4 p-3 bg-gray-50 rounded">
             <p className="text-sm text-gray-600">
-              Preview: {namePrefix}{startStep}{nameSuffix} (SSID: {ssidPrefix}{startStep}{ssidSuffix}), {namePrefix}{startStep + 1}{nameSuffix} (SSID: {ssidPrefix}{startStep + 1}{ssidSuffix}), ...
+              Preview: {namePrefix}{startStep} (SSID: {ssidPrefix}{startStep}), {namePrefix}{startStep + 1} (SSID: {ssidPrefix}{startStep + 1}), ...
             </p>
           </div>
         </div>
@@ -197,40 +187,25 @@ export const BulkWlanForm: React.FC<Props> = ({ onComplete }) => {
         {/* Network Configuration */}
         <div className="bg-white rounded-lg shadow p-6">
           <h3 className="text-lg font-semibold mb-4">Network Configuration</h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Network Type</label>
               <select
                 value={type}
-                onChange={(e) => setType(e.target.value as 'psk' | 'enterprise' | 'open' | 'guest')}
+                onChange={(e) => setType(e.target.value as 'psk' | 'guest')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 required
               >
-                <option value="guest">Guest</option>
-                <option value="psk">PSK (Pre-Shared Key)</option>
-                <option value="enterprise">Enterprise</option>
-                <option value="open">Open</option>
+                <option value="psk">WPA2/PSK</option>
+                <option value="guest">Guest Pass</option>
               </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Security</label>
-              <select
-                value={wlanSecurity}
-                onChange={(e) => setWlanSecurity(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                required
-              >
-                <option value="WPA2Personal">WPA2 Personal</option>
-                <option value="WPA3Personal">WPA3 Personal</option>
-                <option value="WPA2Enterprise">WPA2 Enterprise</option>
-                <option value="WPA3Enterprise">WPA3 Enterprise</option>
-                <option value="Open">Open</option>
-                <option value="None">None</option>
-              </select>
+              <p className="text-xs text-gray-500 mt-1">
+                {type === 'psk' ? 'WPA2 Personal with pre-shared key' : 'Guest network with portal authentication'}
+              </p>
             </div>
 
             {type === 'psk' && (
-              <div className="col-span-2">
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Passphrase</label>
                 <input
                   type="password"
@@ -245,37 +220,26 @@ export const BulkWlanForm: React.FC<Props> = ({ onComplete }) => {
             )}
 
             {type === 'guest' && (
-              <div className="col-span-2">
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Portal Service Profile ID
+                  Portal Service Profile
                 </label>
-                <input
-                  type="text"
+                <select
                   value={portalServiceProfileId}
                   onChange={(e) => setPortalServiceProfileId(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   required={type === 'guest'}
-                  placeholder="e.g., 12345678-1234-1234-1234-123456789012"
-                />
-                <p className="text-xs text-gray-500 mt-1">Required for guest networks</p>
+                >
+                  <option value="">Select a portal profile...</option>
+                  {portalProfiles.map((profile) => (
+                    <option key={profile.id} value={profile.id}>
+                      {profile.serviceName}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-500 mt-1">Required for guest networks with portal service</p>
               </div>
             )}
-
-            <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                VLAN ID (Optional)
-              </label>
-              <input
-                type="number"
-                value={vlanId || ''}
-                onChange={(e) => setVlanId(e.target.value ? Number(e.target.value) : undefined)}
-                min="1"
-                max="4094"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Leave empty for default"
-              />
-              <p className="text-xs text-gray-500 mt-1">VLAN ID range: 1-4094</p>
-            </div>
           </div>
         </div>
 

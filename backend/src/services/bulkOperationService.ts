@@ -233,8 +233,8 @@ export async function bulkDeleteVenues(request: BulkVenueDeleteRequest): Promise
  */
 export async function bulkCreateWlans(request: BulkWlanCreateRequest): Promise<string> {
 
-  const names = generateNames(request.namePrefix, request.nameSuffix, request.count, request.startStep);
-  const ssids = generateNames(request.ssidPrefix, request.ssidSuffix, request.count, request.startStep);
+  const names = generateNames(request.namePrefix, '', request.count, request.startStep);
+  const ssids = generateNames(request.ssidPrefix, '', request.count, request.startStep);
 
   const sessionId = operationTracker.createSession('wlan', 'create', names.length);
   
@@ -276,7 +276,6 @@ export async function bulkCreateWlans(request: BulkWlanCreateRequest): Promise<s
         wlanSecurity: request.wlanSecurity as 'WPA2Personal' | 'WPA3Personal' | 'WPA2Enterprise' | 'WPA3Enterprise' | 'Open' | 'None',
         passphrase: request.passphrase,
         portalServiceProfileId: request.portalServiceProfileId,
-        vlanId: request.vlanId,
         maxRetries: 5,
         pollIntervalMs: 2000
       });
