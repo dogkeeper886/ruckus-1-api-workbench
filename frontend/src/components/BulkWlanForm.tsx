@@ -282,7 +282,7 @@ export const BulkWlanForm: React.FC<Props> = ({ onComplete }) => {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-medium"
+          className="w-full btn-primary font-semibold"
         >
           {isSubmitting ? 'Starting...' : `Create ${count} WiFi Networks`}
         </button>
