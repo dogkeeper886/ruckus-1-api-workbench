@@ -259,12 +259,12 @@ export async function bulkCreateWlans(request: BulkWlanCreateRequest): Promise<s
       await delay(500);
     }
 
-    if (index > 0 && request.options.delayMs > 0) {
-      await delay(request.options.delayMs);
-    }
-
     try {
       await semaphore.acquire();
+
+      if (index > 0 && request.options.delayMs > 0) {
+        await delay(request.options.delayMs);
+      }
 
       operationTracker.updateOperation(sessionId, operationId, {
         status: 'running',
@@ -334,12 +334,12 @@ export async function bulkActivateWlans(request: BulkWlanActivateRequest): Promi
       await delay(500);
     }
 
-    if (index > 0 && request.options.delayMs > 0) {
-      await delay(request.options.delayMs);
-    }
-
     try {
       await semaphore.acquire();
+
+      if (index > 0 && request.options.delayMs > 0) {
+        await delay(request.options.delayMs);
+      }
 
       operationTracker.updateOperation(sessionId, operationId, {
         status: 'running',
@@ -406,12 +406,12 @@ export async function bulkDeactivateWlans(request: BulkWlanDeactivateRequest): P
       await delay(500);
     }
 
-    if (index > 0 && request.options.delayMs > 0) {
-      await delay(request.options.delayMs);
-    }
-
     try {
       await semaphore.acquire();
+
+      if (index > 0 && request.options.delayMs > 0) {
+        await delay(request.options.delayMs);
+      }
 
       operationTracker.updateOperation(sessionId, operationId, {
         status: 'running',
@@ -477,12 +477,12 @@ export async function bulkDeleteWlans(request: BulkWlanDeleteRequest): Promise<s
       await delay(500);
     }
 
-    if (index > 0 && request.options.delayMs > 0) {
-      await delay(request.options.delayMs);
-    }
-
     try {
       await semaphore.acquire();
+
+      if (index > 0 && request.options.delayMs > 0) {
+        await delay(request.options.delayMs);
+      }
 
       operationTracker.updateOperation(sessionId, operationId, {
         status: 'running',
@@ -556,12 +556,12 @@ export async function bulkAddAps(request: BulkApAddRequest): Promise<string> {
       await delay(500);
     }
 
-    if (index > 0 && request.options.delayMs > 0) {
-      await delay(request.options.delayMs);
-    }
-
     try {
       await semaphore.acquire();
+
+      if (index > 0 && request.options.delayMs > 0) {
+        await delay(request.options.delayMs);
+      }
 
       operationTracker.updateOperation(sessionId, operationId, {
         status: 'running',
@@ -630,12 +630,12 @@ export async function bulkMoveAps(request: BulkApMoveRequest): Promise<string> {
       await delay(500);
     }
 
-    if (index > 0 && request.options.delayMs > 0) {
-      await delay(request.options.delayMs);
-    }
-
     try {
       await semaphore.acquire();
+
+      if (index > 0 && request.options.delayMs > 0) {
+        await delay(request.options.delayMs);
+      }
 
       operationTracker.updateOperation(sessionId, operationId, {
         status: 'running',
@@ -702,12 +702,12 @@ export async function bulkRemoveAps(request: BulkApRemoveRequest): Promise<strin
       await delay(500);
     }
 
-    if (index > 0 && request.options.delayMs > 0) {
-      await delay(request.options.delayMs);
-    }
-
     try {
       await semaphore.acquire();
+
+      if (index > 0 && request.options.delayMs > 0) {
+        await delay(request.options.delayMs);
+      }
 
       operationTracker.updateOperation(sessionId, operationId, {
         status: 'running',
@@ -893,12 +893,12 @@ export async function bulkDeleteGuestPasses(request: BulkGuestPassDeleteRequest)
       await delay(500);
     }
 
-    if (index > 0 && request.options.delayMs > 0) {
-      await delay(request.options.delayMs);
-    }
-
     try {
       await semaphore.acquire();
+
+      if (index > 0 && request.options.delayMs > 0) {
+        await delay(request.options.delayMs);
+      }
 
       operationTracker.updateOperation(sessionId, operationId, {
         status: 'running',
