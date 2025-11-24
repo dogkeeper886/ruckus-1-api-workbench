@@ -2,7 +2,7 @@
  * Shared types between backend and frontend
  */
 
-export type OperationType = 'venue' | 'wlan' | 'ap';
+export type OperationType = 'venue' | 'wlan' | 'ap' | 'guest_pass';
 export type OperationStatus = 'queued' | 'running' | 'success' | 'failed' | 'cancelled';
 
 /**
@@ -71,6 +71,34 @@ export interface WifiNetwork {
   }>;
   createdAt?: string;
   updatedAt?: string;
+}
+
+/**
+ * Guest Pass Credential data structure
+ */
+export interface GuestPass {
+  id: string;
+  name: string;
+  networkId: string;
+  networkName?: string; // Network name for display purposes
+  ssid?: string;
+  password: string;
+  expiration: {
+    duration: number;
+    unit: 'Hour' | 'Day' | 'Week' | 'Month';
+    activationType: 'Creation' | 'FirstUse';
+  };
+  maxDevices: number;
+  deliveryMethods: ('PRINT' | 'EMAIL' | 'SMS')[];
+  mobilePhoneNumber?: string;
+  email?: string;
+  notes?: string;
+  disabled?: boolean;
+  createdDate?: number;
+  lastModified?: number;
+  expirationDate?: number;
+  locale?: string;
+  guestUserType?: string;
 }
 
 export interface Operation {
@@ -207,6 +235,31 @@ export interface BulkApMoveRequest {
 export interface BulkApRemoveRequest {
   apSerialNumbers: string[];
   venueId: string;
+  options: BulkOperationOptions;
+}
+
+// Guest Pass-specific types
+export interface BulkGuestPassCreateRequest {
+  networkId: string;
+  namePrefix: string;
+  count: number;
+  startStep: number;
+  expiration: {
+    duration: number;
+    unit: 'Hour' | 'Day' | 'Week' | 'Month';
+    activationType: 'Creation' | 'FirstUse';
+  };
+  maxDevices: number;
+  deliveryMethods: ('PRINT' | 'EMAIL' | 'SMS')[];
+  mobilePhoneNumber?: string;
+  email?: string;
+  notes?: string;
+  options: BulkOperationOptions;
+}
+
+export interface BulkGuestPassDeleteRequest {
+  networkId: string;
+  guestPassIds: string[];
   options: BulkOperationOptions;
 }
 

@@ -38,8 +38,6 @@ class ApiLogTracker {
       this.logs.shift(); // Remove oldest
     }
 
-    console.log(`[API Log] ${entry.status.toUpperCase()} | ${entry.toolName} | ${entry.duration}ms`);
-
     return entry;
   }
 

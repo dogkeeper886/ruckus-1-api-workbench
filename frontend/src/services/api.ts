@@ -9,6 +9,8 @@ import {
   BulkApAddRequest,
   BulkApMoveRequest,
   BulkApRemoveRequest,
+  BulkGuestPassCreateRequest,
+  BulkGuestPassDeleteRequest,
   SessionResponse,
   ProgressResponse,
   OperationsResponse,
@@ -16,6 +18,7 @@ import {
   Venue,
   WifiNetwork,
   AccessPoint,
+  GuestPass,
   ApiLogEntry
 } from '../../../shared/types';
 
@@ -77,6 +80,17 @@ class ApiService {
 
   async bulkRemoveAps(request: BulkApRemoveRequest): Promise<SessionResponse> {
     const response = await this.client.post('/aps/bulk-remove', request);
+    return response.data;
+  }
+
+  // Guest Pass operations
+  async bulkCreateGuestPasses(request: BulkGuestPassCreateRequest): Promise<SessionResponse> {
+    const response = await this.client.post('/guest-passes/bulk-create', request);
+    return response.data;
+  }
+
+  async bulkDeleteGuestPasses(request: BulkGuestPassDeleteRequest): Promise<SessionResponse> {
+    const response = await this.client.post('/guest-passes/bulk-delete', request);
     return response.data;
   }
 
@@ -148,6 +162,13 @@ class ApiService {
     const params = venueId ? { venueId } : {};
     const response = await this.client.get('/aps/ap-groups', { params });
     return response.data.data || { data: [], total: 0 };
+  }
+
+  // Guest Pass operations
+  async getGuestPasses(networkId?: string): Promise<GuestPass[]> {
+    const params = networkId ? { networkId } : {};
+    const response = await this.client.get('/guest-passes', { params });
+    return response.data.data?.data || [];
   }
 
   // API logs operations

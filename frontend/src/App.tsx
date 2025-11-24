@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
+import { Routes, Route, Link, Navigate, useLocation } from 'react-router-dom';
 import { VenuesPage } from './components/VenuesPage';
 import { AccessPointsPage } from './components/AccessPointsPage';
 import { WlansPage } from './components/WlansPage';
-
-type Tab = 'venues' | 'aps' | 'wlans';
+import { GuestPassesPage } from './components/GuestPassesPage';
+import { ColorComparisonPage } from './components/ColorComparisonPage';
 
 function App() {
-  const [activeTab, setActiveTab] = useState<Tab>('venues');
+  const location = useLocation();
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -30,45 +30,60 @@ function App() {
           
           {/* Tab Navigation */}
           <div className="flex gap-4 mt-6 border-b border-gray-200">
-            <button
-              onClick={() => setActiveTab('venues')}
+            <Link
+              to="/venues"
               className={`px-4 py-2 font-medium transition-colors ${
-                activeTab === 'venues'
+                location.pathname === '/venues'
                   ? 'text-blue-600 border-b-2 border-blue-600'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
               Venues
-            </button>
-            <button
-              onClick={() => setActiveTab('aps')}
+            </Link>
+            <Link
+              to="/access-points"
               className={`px-4 py-2 font-medium transition-colors ${
-                activeTab === 'aps'
+                location.pathname === '/access-points'
                   ? 'text-blue-600 border-b-2 border-blue-600'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
               Access Points
-            </button>
-            <button
-              onClick={() => setActiveTab('wlans')}
+            </Link>
+            <Link
+              to="/wifi-networks"
               className={`px-4 py-2 font-medium transition-colors ${
-                activeTab === 'wlans'
+                location.pathname === '/wifi-networks'
                   ? 'text-blue-600 border-b-2 border-blue-600'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
               WiFi Networks
-            </button>
+            </Link>
+            <Link
+              to="/guest-passes"
+              className={`px-4 py-2 font-medium transition-colors ${
+                location.pathname === '/guest-passes'
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Guest Passes
+            </Link>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-6 py-8">
-        {activeTab === 'venues' && <VenuesPage />}
-        {activeTab === 'aps' && <AccessPointsPage />}
-        {activeTab === 'wlans' && <WlansPage />}
+        <Routes>
+          <Route path="/" element={<Navigate to="/venues" replace />} />
+          <Route path="/venues" element={<VenuesPage />} />
+          <Route path="/access-points" element={<AccessPointsPage />} />
+          <Route path="/wifi-networks" element={<WlansPage />} />
+          <Route path="/guest-passes" element={<GuestPassesPage />} />
+          <Route path="/color-demo" element={<ColorComparisonPage />} />
+        </Routes>
       </main>
 
       {/* Footer */}

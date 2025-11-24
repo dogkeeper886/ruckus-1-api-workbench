@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import bulkVenuesRouter from './routes/bulkVenues';
 import bulkWlansRouter from './routes/bulkWlans';
 import bulkApsRouter from './routes/bulkAps';
+import bulkGuestPassesRouter from './routes/bulkGuestPasses';
 import sessionsRouter from './routes/sessions';
 import logsRouter from './routes/logs';
 import { mcpClient } from './services/mcpClientService';
@@ -37,6 +38,7 @@ app.get('/health', (req, res) => {
 app.use('/api/venues', bulkVenuesRouter);
 app.use('/api/wlans', bulkWlansRouter);
 app.use('/api/aps', bulkApsRouter);
+app.use('/api/guest-passes', bulkGuestPassesRouter);
 app.use('/api/sessions', sessionsRouter);
 app.use('/api/logs', logsRouter);
 

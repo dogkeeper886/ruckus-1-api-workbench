@@ -108,11 +108,8 @@ class MCPClientService {
       throw new Error('MCP client not initialized');
     }
 
-    console.log(`[MCP Client] Calling tool: ${toolName}`);
-    console.log(`[MCP Client] Arguments:`, JSON.stringify(args, null, 2));
-
     const callStartTime = Date.now();
-    
+
     try {
       const response = await this.client.callTool({
         name: toolName,
@@ -120,14 +117,6 @@ class MCPClientService {
       });
       const callEndTime = Date.now();
       const duration = callEndTime - callStartTime;
-
-      console.log(`[MCP Client] Response received for ${toolName} in ${duration}ms`);
-      console.log(`[MCP Client] Is error:`, response.isError);
-      console.log(`[MCP Client] Content type:`, typeof response.content);
-      console.log(`[MCP Client] Content array length:`, Array.isArray(response.content) ? response.content.length : 'not an array');
-      
-      // Log full response structure for debugging
-      console.log(`[MCP Client] Full response structure:`, JSON.stringify(response, null, 2).substring(0, 500));
 
       if (response.isError) {
         const content = response.content as any;
@@ -151,12 +140,9 @@ class MCPClientService {
       // Parse the text content (it's JSON string)
       const content = response.content as any;
       const textContent = content?.[0]?.text;
-      console.log(`[MCP Client] Raw response text length:`, textContent?.length || 0);
-      console.log(`[MCP Client] Raw response text preview:`, textContent?.substring(0, 200));
-      
+
       if (!textContent) {
-        console.log(`[MCP Client] WARNING: No text content in response`);
-        console.log(`[MCP Client] Content object:`, JSON.stringify(content));
+        console.error(`[MCP Client] WARNING: No text content in response from ${toolName}`);
         
         // Log warning to tracker
         apiLogTracker.addLog({
@@ -175,10 +161,8 @@ class MCPClientService {
       let parsed;
       try {
         parsed = JSON.parse(textContent);
-        console.log(`[MCP Client] Successfully parsed JSON response`);
       } catch (e) {
         // If not JSON, return as-is
-        console.log(`[MCP Client] Response is not JSON, returning as-is`);
         parsed = textContent;
       }
       
@@ -482,6 +466,28 @@ class MCPClientService {
     pollIntervalMs?: number;
   }): Promise<any> {
     return this.callTool('create_guest_pass', params);
+  }
+
+  async deleteGuestPass(params: {
+    networkId: string;
+    guestPassId: string;
+    maxRetries?: number;
+    pollIntervalMs?: number;
+  }): Promise<any> {
+    return this.callTool('delete_guest_pass', params);
+  }
+
+  async queryGuestPasses(params?: {
+    filters?: any;
+    fields?: string[];
+    page?: number;
+    pageSize?: number;
+    searchString?: string;
+    searchTargetFields?: string[];
+    sortField?: string;
+    sortOrder?: string;
+  }): Promise<any> {
+    return this.callTool('query_guest_passes', params || {});
   }
 
   async updateWifiNetwork(params: {
