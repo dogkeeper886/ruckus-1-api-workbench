@@ -101,6 +101,35 @@ export interface GuestPass {
   guestUserType?: string;
 }
 
+/**
+ * Activity Details from RUCKUS API (normalized from MCP response)
+ */
+export interface ActivityDetails {
+  id: string;
+  status: 'SUCCESS' | 'FAIL' | 'INPROGRESS';
+  endDatetime?: string;
+  error?: {
+    errors?: Array<{
+      message: string;
+      reason?: string;
+      code?: string;
+    }>;
+  } | null;
+  message?: string;
+  steps?: Array<{
+    id: string;
+    description: string;
+    status: string;
+    error?: any;
+    startDatetime?: string;
+    endDatetime?: string;
+  }>;
+  [key: string]: any; // Allow other RUCKUS API fields
+}
+
+/**
+ * Operation in a bulk operation session
+ */
 export interface Operation {
   id: string;
   type: OperationType;
@@ -110,11 +139,10 @@ export interface Operation {
   startTime?: Date;
   endTime?: Date;
   duration?: number; // milliseconds
-  result?: any;
-  error?: string;
+  error?: string; // Clean, human-readable error message
   activityId?: string; // RUCKUS API activity/request ID
+  activityDetails?: ActivityDetails; // Full activity details from RUCKUS API (source of truth)
   requestData?: any; // The request payload sent to RUCKUS API
-  responseData?: any; // The response received from RUCKUS API
 }
 
 export interface BulkOperationRequest {

@@ -120,9 +120,18 @@ class MCPClientService {
 
       if (response.isError) {
         const content = response.content as any;
-        const errorText = content?.[0]?.text || 'Unknown error';
+        let errorText = content?.[0]?.text || 'Unknown error';
+
+        // Try to format JSON for better readability
+        try {
+          const parsed = JSON.parse(errorText);
+          errorText = JSON.stringify(parsed, null, 2);
+        } catch (e) {
+          // Not JSON, use as-is
+        }
+
         console.error(`[MCP Client] Tool ${toolName} failed:`, errorText);
-        
+
         // Log error to tracker
         apiLogTracker.addLog({
           timestamp: new Date(),
@@ -133,8 +142,8 @@ class MCPClientService {
           status: 'error',
           errorMessage: errorText,
         });
-        
-        throw new Error(`Tool ${toolName} error: ${errorText}`);
+
+        throw new Error(`Tool ${toolName} error:\n${errorText}`);
       }
 
       // Parse the text content (it's JSON string)

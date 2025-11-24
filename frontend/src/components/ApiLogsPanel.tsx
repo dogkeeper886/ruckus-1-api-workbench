@@ -218,10 +218,41 @@ export const ApiLogsPanel: React.FC = () => {
                                 <div>
                                   <div className="flex justify-between items-center mb-2">
                                     <h5 className="font-semibold text-red-700">Error Message</h5>
+                                    <button
+                                      onClick={() => {
+                                        // Try to format as JSON, otherwise copy as-is
+                                        try {
+                                          const match = log.errorMessage.match(/Tool \w+ error:\s*(\{[\s\S]*\})\s*$/);
+                                          const jsonText = match ? match[1] : log.errorMessage;
+                                          const parsed = JSON.parse(jsonText);
+                                          copyToClipboard(JSON.stringify(parsed, null, 2));
+                                        } catch (e) {
+                                          copyToClipboard(log.errorMessage);
+                                        }
+                                      }}
+                                      className="text-xs px-3 py-1 bg-white border border-gray-300 hover:bg-gray-100 rounded transition-colors"
+                                    >
+                                      📋 Copy
+                                    </button>
                                   </div>
-                                  <div className="bg-red-50 border border-red-200 p-3 rounded text-sm text-red-800">
-                                    {log.errorMessage}
-                                  </div>
+                                  <pre className="bg-red-50 border border-red-200 p-3 rounded overflow-x-auto text-xs font-mono text-red-800 whitespace-pre-wrap">
+                                    {(() => {
+                                      // Try to format as JSON for display
+                                      try {
+                                        const match = log.errorMessage.match(/Tool (\w+) error:\s*(\{[\s\S]*\})\s*$/);
+                                        if (match) {
+                                          const toolName = match[1];
+                                          const jsonText = match[2];
+                                          const parsed = JSON.parse(jsonText);
+                                          return `Tool ${toolName} error:\n\n${JSON.stringify(parsed, null, 2)}`;
+                                        }
+                                        return log.errorMessage;
+                                      } catch (e) {
+                                        // Not JSON, display as-is
+                                        return log.errorMessage;
+                                      }
+                                    })()}
+                                  </pre>
                                 </div>
                               )}
 

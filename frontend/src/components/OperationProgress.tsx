@@ -7,6 +7,11 @@ interface Props {
   onComplete?: () => void;
 }
 
+// Helper function to get error message (backend now provides clean errors)
+const getErrorMessage = (op: Operation): string => {
+  return op.error || '-';
+};
+
 export const OperationProgress: React.FC<Props> = ({ sessionId, onComplete }) => {
   const [progress, setProgress] = useState<BulkOperationProgress | null>(null);
   const [session, setSession] = useState<BulkOperationSession | null>(null);
@@ -217,8 +222,8 @@ export const OperationProgress: React.FC<Props> = ({ sessionId, onComplete }) =>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {op.duration ? `${(op.duration / 1000).toFixed(2)}s` : '-'}
                   </td>
-                  <td className="px-6 py-4 text-sm text-red-600">
-                    {op.error || '-'}
+                  <td className="px-6 py-4 text-sm text-red-600 max-w-md truncate" title={op.error || ''}>
+                    {getErrorMessage(op)}
                   </td>
                 </tr>
               ))}
@@ -277,20 +282,20 @@ export const OperationProgress: React.FC<Props> = ({ sessionId, onComplete }) =>
                   </div>
                 )}
 
-                {/* Response Data */}
-                {selectedOperation.responseData && (
+                {/* Activity Details */}
+                {selectedOperation.activityDetails && (
                   <div>
                     <div className="flex justify-between items-center mb-2">
-                      <h5 className="font-medium text-gray-700">Response Data</h5>
+                      <h5 className="font-medium text-gray-700">Activity Details</h5>
                       <button
-                        onClick={() => copyToClipboard(JSON.stringify(selectedOperation.responseData, null, 2))}
+                        onClick={() => copyToClipboard(JSON.stringify(selectedOperation.activityDetails, null, 2))}
                         className="text-xs px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded"
                       >
                         Copy
                       </button>
                     </div>
                     <pre className="bg-gray-50 p-4 rounded overflow-x-auto text-xs">
-                      {JSON.stringify(selectedOperation.responseData, null, 2)}
+                      {JSON.stringify(selectedOperation.activityDetails, null, 2)}
                     </pre>
                   </div>
                 )}
@@ -298,14 +303,14 @@ export const OperationProgress: React.FC<Props> = ({ sessionId, onComplete }) =>
                 {/* Error Details */}
                 {selectedOperation.error && (
                   <div>
-                    <h5 className="font-medium text-red-700 mb-2">Error Details</h5>
-                    <pre className="bg-red-50 p-4 rounded overflow-x-auto text-xs text-red-800">
+                    <h5 className="font-medium text-red-700 mb-2">Error Message</h5>
+                    <div className="bg-red-50 p-4 rounded text-sm text-red-800">
                       {selectedOperation.error}
-                    </pre>
+                    </div>
                   </div>
                 )}
 
-                {!selectedOperation.requestData && !selectedOperation.responseData && (
+                {!selectedOperation.requestData && !selectedOperation.activityDetails && (
                   <div className="text-sm text-gray-500 italic">
                     No debug data available for this operation yet.
                   </div>
