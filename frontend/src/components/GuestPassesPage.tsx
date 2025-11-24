@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import { apiService } from '../services/api';
 import { GuestPass, BulkGuestPassDeleteRequest } from '../../../shared/types';
 import { ApiLogsPanel } from './ApiLogsPanel';
@@ -28,7 +28,7 @@ export const GuestPassesPage: React.FC = () => {
   // Create form state
   const [showCreateForm, setShowCreateForm] = useState(false);
 
-  const fetchGuestPasses = useCallback(async () => {
+  const fetchGuestPasses = async () => {
     try {
       setError(null);
       const guestPassData = await apiService.getGuestPasses();
@@ -41,18 +41,15 @@ export const GuestPassesPage: React.FC = () => {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, []);
+  };
 
-  // Fetch guest passes on mount
   useEffect(() => {
     fetchGuestPasses();
-  }, [fetchGuestPasses]);
 
-  // Auto-refresh every 30 seconds
-  useEffect(() => {
+    // Auto-refresh every 30 seconds
     const interval = setInterval(fetchGuestPasses, 30000);
     return () => clearInterval(interval);
-  }, [fetchGuestPasses]);
+  }, []);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -122,11 +119,14 @@ export const GuestPassesPage: React.FC = () => {
 
       if (response.success && response.data) {
         if (deleteWaitMode === 'track') {
+          // Switch to progress tracking view
           setDeleteSessionId(response.data.sessionId);
           setShowDeleteDialog(false);
         } else {
+          // Fire and forget mode
           setShowDeleteDialog(false);
           setSelectedGuestPassIds(new Set());
+          // Refresh guest pass list after a short delay
           setTimeout(() => {
             handleRefresh();
           }, 1000);
@@ -142,6 +142,7 @@ export const GuestPassesPage: React.FC = () => {
   };
 
   const handleProgressComplete = () => {
+    // When progress tracking is complete, return to guest pass list
     setDeleteSessionId(null);
     setSelectedGuestPassIds(new Set());
     handleRefresh();
@@ -251,7 +252,7 @@ export const GuestPassesPage: React.FC = () => {
               You are about to delete <span className="font-bold text-red-600">{selectedGuestPassIds.size}</span> guest pass credential(s). This action cannot be undone.
             </p>
 
-            <div className="space-y-4">
+            <div className="space-y-4 mb-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Max Concurrent (1-20)
@@ -268,7 +269,7 @@ export const GuestPassesPage: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Delay Between Deletes (ms)
+                  Delay Between Ops (ms)
                 </label>
                 <input
                   type="number"
@@ -310,7 +311,7 @@ export const GuestPassesPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="mt-6 flex gap-3">
+            <div className="flex gap-3">
               <button
                 onClick={handleCancelDelete}
                 disabled={isDeleting}
@@ -323,7 +324,7 @@ export const GuestPassesPage: React.FC = () => {
                 disabled={isDeleting}
                 className="flex-1 btn-danger"
               >
-                {isDeleting ? 'Deleting...' : 'Delete'}
+                {isDeleting ? 'Starting...' : 'Confirm Delete'}
               </button>
             </div>
           </div>
@@ -370,14 +371,14 @@ export const GuestPassesPage: React.FC = () => {
           ) : (
             <div className="overflow-x-auto max-h-[50vh] md:max-h-[60vh] overflow-y-auto">
               <table className="w-full">
-                <thead className="bg-gray-50 sticky top-0">
+                <thead className="bg-gray-50 sticky top-0 border-b border-gray-200">
                   <tr>
-                    <th className="px-6 py-3 text-left">
+                    <th className="px-6 py-3 text-left w-12">
                       <input
                         type="checkbox"
-                        checked={guestPasses.length > 0 && selectedGuestPassIds.size === guestPasses.length}
+                        checked={selectedGuestPassIds.size === guestPasses.length && guestPasses.length > 0}
                         onChange={handleSelectAll}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-2 focus:ring-blue-500"
                       />
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -390,20 +391,27 @@ export const GuestPassesPage: React.FC = () => {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {guestPasses.map((gp) => (
-                    <tr key={gp.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4">
+                    <tr
+                      key={gp.id}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <input
                           type="checkbox"
                           checked={selectedGuestPassIds.has(gp.id)}
                           onChange={() => handleSelectGuestPass(gp.id)}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-2 focus:ring-blue-500"
                         />
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-500">
-                        {gp.networkName && gp.ssid ? `${gp.networkName} (${gp.ssid})` : gp.ssid || 'N/A'}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-500">
+                          {gp.networkName && gp.ssid ? `${gp.networkName} (${gp.ssid})` : gp.ssid || 'N/A'}
+                        </div>
                       </td>
-                      <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                        {gp.name}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">
+                          {gp.name}
+                        </div>
                       </td>
                     </tr>
                   ))}

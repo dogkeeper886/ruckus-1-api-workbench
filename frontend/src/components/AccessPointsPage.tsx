@@ -268,114 +268,6 @@ export const AccessPointsPage: React.FC = () => {
         </div>
       )}
 
-      {/* Access Points Table */}
-      {!isLoading && !error && (
-        <div className="bg-white rounded-lg shadow-small border border-gray-200 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-bold text-gray-900">
-                All Access Points ({aps.length})
-              </h3>
-              <div className="flex gap-3">
-                <button
-                  onClick={handleAddClick}
-                  disabled={selectedApSerials.size > 0}
-                  className="btn-success flex items-center gap-2"
-                >
-                  <span>➕</span>
-                  Add APs
-                </button>
-                <button
-                  onClick={handleDeleteClick}
-                  disabled={selectedApSerials.size === 0}
-                  className="btn-danger flex items-center gap-2"
-                >
-                  <span>🗑️</span>
-                  Delete Selected {selectedApSerials.size > 0 && `(${selectedApSerials.size})`}
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {aps.length === 0 ? (
-            <div className="px-6 py-12 text-center">
-              <div className="text-gray-400 text-5xl mb-4">📡</div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">No Access Points Found</h3>
-              <p className="text-gray-600">
-                No access points are currently configured. Click "Add APs" to get started.
-              </p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto max-h-[50vh] md:max-h-[60vh] overflow-y-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 sticky top-0 border-b border-gray-200">
-                  <tr>
-                    <th className="px-6 py-3 text-left w-12">
-                      <input
-                        type="checkbox"
-                        checked={selectedApSerials.size === aps.length && aps.length > 0}
-                        onChange={handleSelectAll}
-                        className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-2 focus:ring-blue-500"
-                      />
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Serial Number
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Name
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Venue
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      AP Group
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {aps.map((ap) => (
-                    <tr
-                      key={ap.serialNumber}
-                      className="hover:bg-gray-50 transition-colors"
-                    >
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <input
-                          type="checkbox"
-                          checked={selectedApSerials.has(ap.serialNumber)}
-                          onChange={() => handleSelectAp(ap.serialNumber)}
-                          className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-2 focus:ring-blue-500"
-                        />
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {ap.serialNumber}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {ap.name}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                        {ap.venueName || ap.venueId}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                        {ap.apGroupName || ap.apGroupId}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadge(ap.status)}`}>
-                          {ap.status}
-                        </span>
-                      </td>
-                    </tr>
-                    ))
-                  }
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      )}
-
       {/* Delete Confirmation Dialog */}
       {showDeleteDialog && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -481,6 +373,122 @@ export const AccessPointsPage: React.FC = () => {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Access Points Table */}
+      {!isLoading && !error && (
+        <div className="bg-white rounded-lg shadow-small border border-gray-200 overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-bold text-gray-900">
+                All Access Points ({aps.length})
+              </h3>
+              <div className="flex gap-3">
+                <button
+                  onClick={handleAddClick}
+                  disabled={selectedApSerials.size > 0}
+                  className="btn-success flex items-center gap-2"
+                >
+                  <span>➕</span>
+                  Add APs
+                </button>
+                <button
+                  onClick={handleDeleteClick}
+                  disabled={selectedApSerials.size === 0}
+                  className="btn-danger flex items-center gap-2"
+                >
+                  <span>🗑️</span>
+                  Delete Selected {selectedApSerials.size > 0 && `(${selectedApSerials.size})`}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {aps.length === 0 ? (
+            <div className="px-6 py-12 text-center">
+              <div className="text-gray-400 text-5xl mb-4">📡</div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No Access Points Found</h3>
+              <p className="text-gray-600">
+                No access points are currently configured. Click "Add APs" to get started.
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto max-h-[50vh] md:max-h-[60vh] overflow-y-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 sticky top-0 border-b border-gray-200">
+                  <tr>
+                    <th className="px-6 py-3 text-left w-12">
+                      <input
+                        type="checkbox"
+                        checked={selectedApSerials.size === aps.length && aps.length > 0}
+                        onChange={handleSelectAll}
+                        className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-2 focus:ring-blue-500"
+                      />
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Serial Number
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Name
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Venue
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      AP Group
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {aps.map((ap) => (
+                    <tr
+                      key={ap.serialNumber}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <input
+                          type="checkbox"
+                          checked={selectedApSerials.has(ap.serialNumber)}
+                          onChange={() => handleSelectAp(ap.serialNumber)}
+                          className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-2 focus:ring-blue-500"
+                        />
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">
+                          {ap.serialNumber}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">
+                          {ap.name}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-600">
+                          {ap.venueName || ap.venueId}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-600">
+                          {ap.apGroupName || ap.apGroupId}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusBadge(ap.status)}`}>
+                          {ap.status}
+                        </span>
+                      </td>
+                    </tr>
+                    ))
+                  }
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
 

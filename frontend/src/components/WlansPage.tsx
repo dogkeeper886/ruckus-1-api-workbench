@@ -455,9 +455,9 @@ export const WlansPage: React.FC = () => {
       <div className="bg-white rounded-lg shadow-small border border-gray-200 p-6">
         <div className="flex justify-between items-center">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">WiFi Networks (Guest Pass)</h2>
+            <h2 className="text-2xl font-bold text-gray-900">WiFi Networks</h2>
             <p className="text-sm text-gray-600 mt-1">
-              View and manage WiFi networks from RUCKUS One
+              Manage WiFi networks (Guest Pass and WPA2 PSK) from RUCKUS One
               {lastRefresh && (
                 <span className="ml-2">
                   • Last updated: {formatTimestamp(lastRefresh)}
@@ -906,7 +906,7 @@ export const WlansPage: React.FC = () => {
                   className="btn-danger flex items-center gap-2"
                 >
                   <span>🗑️</span>
-                  Delete {selectedNetworkIds.size > 0 && `(${selectedNetworkIds.size})`}
+                  Delete Selected {selectedNetworkIds.size > 0 && `(${selectedNetworkIds.size})`}
                 </button>
               </div>
             </div>

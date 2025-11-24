@@ -132,7 +132,7 @@ export const BulkWlanForm: React.FC<Props> = ({ onComplete }) => {
         {/* Network Naming */}
         <div className="bg-white rounded-lg shadow-medium p-6">
           <h3 className="text-lg font-semibold mb-4">Network Naming</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Name Prefix</label>
               <input
