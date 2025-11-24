@@ -30,9 +30,37 @@ function parseErrorJson(errorStr: string): any {
 }
 
 /**
- * Helper to extract clean error message from MCP response
+ * Helper to parse error message string into MCP response object
  */
-function extractErrorMessage(mcpResponse: any): string {
+function parseErrorToMcpResponse(errorInput: any): any {
+  if (typeof errorInput === 'string') {
+    // Try to extract JSON from "Tool xxx error: {JSON}" format
+    const match = errorInput.match(/Tool \w+ error:\s*(\{[\s\S]*\})\s*$/);
+    if (match) {
+      try {
+        return JSON.parse(match[1]);
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
+  }
+  return errorInput;
+}
+
+/**
+ * Helper to extract clean error message from MCP response or error string
+ */
+function extractErrorMessage(errorInput: any): string {
+  // Parse error string to MCP response if needed
+  const mcpResponse = parseErrorToMcpResponse(errorInput);
+
+  if (!mcpResponse) {
+    // Not a valid MCP response, return truncated string
+    const errorStr = typeof errorInput === 'string' ? errorInput : String(errorInput);
+    return errorStr.length > 150 ? errorStr.substring(0, 150) + '...' : errorStr;
+  }
+
   // Priority order for extracting meaningful error messages:
 
   // 1. Check activityDetails.error (JSON string that needs parsing)
@@ -214,8 +242,11 @@ export async function bulkCreateVenues(request: BulkVenueCreateRequest): Promise
 
     } catch (error: any) {
       // Extract clean error message
-      const errorMessage = extractErrorMessage(error);
-      const normalized = normalizeMcpResponse(error);
+      const errorMessage = extractErrorMessage(error.message || String(error));
+
+      // Parse error to get MCP response if available
+      const mcpResponse = parseErrorToMcpResponse(error.message || String(error));
+      const normalized = mcpResponse ? normalizeMcpResponse(mcpResponse) : null;
 
       operationTracker.updateOperation(sessionId, operationId, {
         status: 'failed',
@@ -303,8 +334,11 @@ export async function bulkDeleteVenues(request: BulkVenueDeleteRequest): Promise
 
     } catch (error: any) {
       // Extract clean error message
-      const errorMessage = extractErrorMessage(error);
-      const normalized = normalizeMcpResponse(error);
+      const errorMessage = extractErrorMessage(error.message || String(error));
+
+      // Parse error to get MCP response if available
+      const mcpResponse = parseErrorToMcpResponse(error.message || String(error));
+      const normalized = mcpResponse ? normalizeMcpResponse(mcpResponse) : null;
 
       operationTracker.updateOperation(sessionId, operationId, {
         status: 'failed',
@@ -962,8 +996,11 @@ export async function bulkCreateGuestPasses(request: BulkGuestPassCreateRequest)
 
     } catch (error: any) {
       // Extract clean error message
-      const errorMessage = extractErrorMessage(error);
-      const normalized = normalizeMcpResponse(error);
+      const errorMessage = extractErrorMessage(error.message || String(error));
+
+      // Parse error to get MCP response if available
+      const mcpResponse = parseErrorToMcpResponse(error.message || String(error));
+      const normalized = mcpResponse ? normalizeMcpResponse(mcpResponse) : null;
 
       operationTracker.updateOperation(sessionId, operationId, {
         status: 'failed',
