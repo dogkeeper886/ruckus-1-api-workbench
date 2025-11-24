@@ -423,10 +423,19 @@ export async function bulkCreateWlans(request: BulkWlanCreateRequest): Promise<s
       });
 
     } catch (error: any) {
+      // Extract clean error message
+      const errorMessage = extractErrorMessage(error.message || String(error));
+
+      // Parse error to get MCP response if available
+      const mcpResponse = parseErrorToMcpResponse(error.message || String(error));
+      const normalized = mcpResponse ? normalizeMcpResponse(mcpResponse) : null;
+
       operationTracker.updateOperation(sessionId, operationId, {
         status: 'failed',
         endTime: new Date(),
-        error: error.message || String(error)
+        error: errorMessage,
+        activityId: normalized?.requestId,
+        activityDetails: normalized?.activityDetails
       });
     } finally {
       semaphore.release();
@@ -498,10 +507,19 @@ export async function bulkActivateWlans(request: BulkWlanActivateRequest): Promi
       });
 
     } catch (error: any) {
+      // Extract clean error message
+      const errorMessage = extractErrorMessage(error.message || String(error));
+
+      // Parse error to get MCP response if available
+      const mcpResponse = parseErrorToMcpResponse(error.message || String(error));
+      const normalized = mcpResponse ? normalizeMcpResponse(mcpResponse) : null;
+
       operationTracker.updateOperation(sessionId, operationId, {
         status: 'failed',
         endTime: new Date(),
-        error: error.message || String(error)
+        error: errorMessage,
+        activityId: normalized?.requestId,
+        activityDetails: normalized?.activityDetails
       });
     } finally {
       semaphore.release();
@@ -572,10 +590,19 @@ export async function bulkDeactivateWlans(request: BulkWlanDeactivateRequest): P
       });
 
     } catch (error: any) {
+      // Extract clean error message
+      const errorMessage = extractErrorMessage(error.message || String(error));
+
+      // Parse error to get MCP response if available
+      const mcpResponse = parseErrorToMcpResponse(error.message || String(error));
+      const normalized = mcpResponse ? normalizeMcpResponse(mcpResponse) : null;
+
       operationTracker.updateOperation(sessionId, operationId, {
         status: 'failed',
         endTime: new Date(),
-        error: error.message || String(error)
+        error: errorMessage,
+        activityId: normalized?.requestId,
+        activityDetails: normalized?.activityDetails
       });
     } finally {
       semaphore.release();
@@ -645,10 +672,19 @@ export async function bulkDeleteWlans(request: BulkWlanDeleteRequest): Promise<s
       });
 
     } catch (error: any) {
+      // Extract clean error message
+      const errorMessage = extractErrorMessage(error.message || String(error));
+
+      // Parse error to get MCP response if available
+      const mcpResponse = parseErrorToMcpResponse(error.message || String(error));
+      const normalized = mcpResponse ? normalizeMcpResponse(mcpResponse) : null;
+
       operationTracker.updateOperation(sessionId, operationId, {
         status: 'failed',
         endTime: new Date(),
-        error: error.message || String(error)
+        error: errorMessage,
+        activityId: normalized?.requestId,
+        activityDetails: normalized?.activityDetails
       });
     } finally {
       semaphore.release();
@@ -731,10 +767,19 @@ export async function bulkAddAps(request: BulkApAddRequest): Promise<string> {
       });
 
     } catch (error: any) {
+      // Extract clean error message
+      const errorMessage = extractErrorMessage(error.message || String(error));
+
+      // Parse error to get MCP response if available
+      const mcpResponse = parseErrorToMcpResponse(error.message || String(error));
+      const normalized = mcpResponse ? normalizeMcpResponse(mcpResponse) : null;
+
       operationTracker.updateOperation(sessionId, operationId, {
         status: 'failed',
         endTime: new Date(),
-        error: error.message || String(error)
+        error: errorMessage,
+        activityId: normalized?.requestId,
+        activityDetails: normalized?.activityDetails
       });
     } finally {
       semaphore.release();
@@ -806,10 +851,19 @@ export async function bulkMoveAps(request: BulkApMoveRequest): Promise<string> {
       });
 
     } catch (error: any) {
+      // Extract clean error message
+      const errorMessage = extractErrorMessage(error.message || String(error));
+
+      // Parse error to get MCP response if available
+      const mcpResponse = parseErrorToMcpResponse(error.message || String(error));
+      const normalized = mcpResponse ? normalizeMcpResponse(mcpResponse) : null;
+
       operationTracker.updateOperation(sessionId, operationId, {
         status: 'failed',
         endTime: new Date(),
-        error: error.message || String(error)
+        error: errorMessage,
+        activityId: normalized?.requestId,
+        activityDetails: normalized?.activityDetails
       });
     } finally {
       semaphore.release();
@@ -880,10 +934,19 @@ export async function bulkRemoveAps(request: BulkApRemoveRequest): Promise<strin
       });
 
     } catch (error: any) {
+      // Extract clean error message
+      const errorMessage = extractErrorMessage(error.message || String(error));
+
+      // Parse error to get MCP response if available
+      const mcpResponse = parseErrorToMcpResponse(error.message || String(error));
+      const normalized = mcpResponse ? normalizeMcpResponse(mcpResponse) : null;
+
       operationTracker.updateOperation(sessionId, operationId, {
         status: 'failed',
         endTime: new Date(),
-        error: error.message || String(error)
+        error: errorMessage,
+        activityId: normalized?.requestId,
+        activityDetails: normalized?.activityDetails
       });
     } finally {
       semaphore.release();
@@ -1084,10 +1147,19 @@ export async function bulkDeleteGuestPasses(request: BulkGuestPassDeleteRequest)
       });
 
     } catch (error: any) {
+      // Extract clean error message
+      const errorMessage = extractErrorMessage(error.message || String(error));
+
+      // Parse error to get MCP response if available
+      const mcpResponse = parseErrorToMcpResponse(error.message || String(error));
+      const normalized = mcpResponse ? normalizeMcpResponse(mcpResponse) : null;
+
       operationTracker.updateOperation(sessionId, operationId, {
         status: 'failed',
         endTime: new Date(),
-        error: error.message || String(error)
+        error: errorMessage,
+        activityId: normalized?.requestId,
+        activityDetails: normalized?.activityDetails
       });
     } finally {
       semaphore.release();
