@@ -276,7 +276,7 @@ export const OperationProgress: React.FC<Props> = ({ sessionId, onComplete }) =>
                         Copy
                       </button>
                     </div>
-                    <pre className="bg-gray-50 p-4 rounded overflow-x-auto text-xs">
+                    <pre className="bg-gray-50 p-4 rounded overflow-x-auto text-xs whitespace-pre-wrap break-words">
                       {JSON.stringify(selectedOperation.requestData, null, 2)}
                     </pre>
                   </div>
@@ -294,7 +294,7 @@ export const OperationProgress: React.FC<Props> = ({ sessionId, onComplete }) =>
                         Copy
                       </button>
                     </div>
-                    <pre className="bg-gray-50 p-4 rounded overflow-x-auto text-xs">
+                    <pre className="bg-gray-50 p-4 rounded overflow-x-auto text-xs whitespace-pre-wrap break-words">
                       {JSON.stringify(selectedOperation.activityDetails, null, 2)}
                     </pre>
                   </div>

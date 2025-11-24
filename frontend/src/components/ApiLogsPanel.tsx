@@ -267,7 +267,7 @@ export const ApiLogsPanel: React.FC = () => {
                                     📋 Copy
                                   </button>
                                 </div>
-                                <pre className="bg-white border border-gray-200 p-3 rounded overflow-x-auto text-xs font-mono">
+                                <pre className="bg-white border border-gray-200 p-3 rounded overflow-x-auto text-xs font-mono whitespace-pre-wrap break-words">
                                   {JSON.stringify(log.requestData, null, 2)}
                                 </pre>
                               </div>
@@ -283,7 +283,7 @@ export const ApiLogsPanel: React.FC = () => {
                                     📋 Copy
                                   </button>
                                 </div>
-                                <pre className="bg-white border border-gray-200 p-3 rounded overflow-x-auto text-xs font-mono max-h-96">
+                                <pre className="bg-white border border-gray-200 p-3 rounded overflow-x-auto text-xs font-mono max-h-96 whitespace-pre-wrap break-words">
                                   {JSON.stringify(log.responseData, null, 2)}
                                 </pre>
                               </div>
