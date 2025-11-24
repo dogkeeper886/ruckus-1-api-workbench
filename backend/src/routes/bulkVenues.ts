@@ -56,13 +56,16 @@ router.get('/test-mcp', async (req: Request, res: Response) => {
  */
 router.get('/', async (req: Request, res: Response) => {
   try {
-    console.log('[Venues] Fetching venues via MCP...');
+    console.log('[Venues] Fetching venues...');
     const venues = await mcpClient.getVenues();
-    
+
+    const venueCount = venues.data?.length || 0;
+    console.log(`[Venues] Found ${venueCount} venues`);
+
     res.json({
       success: true,
       data: venues,
-      message: `Found ${venues.data?.length || 0} venues`
+      message: `Found ${venueCount} venues`
     });
   } catch (error: any) {
     console.error('[Venues] Error fetching venues:', error);

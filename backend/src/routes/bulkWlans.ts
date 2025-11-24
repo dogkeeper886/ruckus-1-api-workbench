@@ -21,14 +21,14 @@ const router = Router();
  */
 router.get('/', async (req: Request, res: Response) => {
   try {
-    console.log('[WLANs] Fetching WiFi networks via MCP...');
+    console.log('[WLANs] Fetching WiFi networks...');
     const networks = await mcpClient.queryWifiNetworks({
       pageSize: 10000,
       fields: ['id', 'name', 'ssid', 'nwSubType', 'wlanSecurity', 'portalServiceProfileId', 'vlanId', 'venueApGroups']
     });
 
     const networkCount = networks.data?.length || 0;
-    console.log(`[WLANs] Successfully fetched ${networkCount} networks`);
+    console.log(`[WLANs] Found ${networkCount} networks`);
 
     // Map nwSubType to type for frontend compatibility
     if (networks.data) {

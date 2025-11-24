@@ -76,18 +76,21 @@ router.get('/', async (req: Request, res: Response) => {
   try {
     const { venueId, searchString, page = '1', pageSize = '100' } = req.query;
     
-    console.log('[APs] Fetching APs via MCP...');
+    console.log('[APs] Fetching APs...');
     const aps = await mcpClient.getAps({
       venueId: venueId as string,
       searchString: searchString as string,
       page: Number(page),
       pageSize: Number(pageSize)
     });
-    
+
+    const apCount = aps.data?.length || 0;
+    console.log(`[APs] Found ${apCount} APs`);
+
     res.json({
       success: true,
       data: aps,
-      message: `Found ${aps.data?.length || 0} APs`
+      message: `Found ${apCount} APs`
     });
   } catch (error: any) {
     console.error('[APs] Error fetching APs:', error);

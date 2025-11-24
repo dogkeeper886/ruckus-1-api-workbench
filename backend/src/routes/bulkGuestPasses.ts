@@ -17,7 +17,7 @@ const router = Router();
  */
 router.get('/', async (req: Request, res: Response) => {
   try {
-    console.log('[GuestPasses] Fetching all guest passes...');
+    console.log('[GuestPasses] Fetching guest passes...');
 
     // Single query for all guest passes (no network filtering needed)
     const result = await mcpClient.queryGuestPasses({
