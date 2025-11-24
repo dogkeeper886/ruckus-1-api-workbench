@@ -233,12 +233,26 @@ export async function bulkCreateVenues(request: BulkVenueCreateRequest): Promise
 
       // Normalize and store response data
       const normalized = normalizeMcpResponse(result);
-      operationTracker.updateOperation(sessionId, operationId, {
-        status: 'success',
-        endTime: new Date(),
-        activityId: normalized.requestId,
-        activityDetails: normalized.activityDetails
-      });
+
+      // Check if operation actually failed (MCP returns status: 'failed' without throwing)
+      if (result.status === 'failed' || result.activityDetails?.status === 'FAIL') {
+        const errorMessage = extractErrorMessage(JSON.stringify(result));
+
+        operationTracker.updateOperation(sessionId, operationId, {
+          status: 'failed',
+          endTime: new Date(),
+          error: errorMessage,
+          activityId: normalized.requestId,
+          activityDetails: normalized.activityDetails
+        });
+      } else {
+        operationTracker.updateOperation(sessionId, operationId, {
+          status: 'success',
+          endTime: new Date(),
+          activityId: normalized.requestId,
+          activityDetails: normalized.activityDetails
+        });
+      }
 
     } catch (error: any) {
       // Extract clean error message
@@ -325,12 +339,26 @@ export async function bulkDeleteVenues(request: BulkVenueDeleteRequest): Promise
 
       // Normalize and store response data
       const normalized = normalizeMcpResponse(result);
-      operationTracker.updateOperation(sessionId, operationId, {
-        status: 'success',
-        endTime: new Date(),
-        activityId: normalized.requestId,
-        activityDetails: normalized.activityDetails
-      });
+
+      // Check if operation actually failed (MCP returns status: 'failed' without throwing)
+      if (result.status === 'failed' || result.activityDetails?.status === 'FAIL') {
+        const errorMessage = extractErrorMessage(JSON.stringify(result));
+
+        operationTracker.updateOperation(sessionId, operationId, {
+          status: 'failed',
+          endTime: new Date(),
+          error: errorMessage,
+          activityId: normalized.requestId,
+          activityDetails: normalized.activityDetails
+        });
+      } else {
+        operationTracker.updateOperation(sessionId, operationId, {
+          status: 'success',
+          endTime: new Date(),
+          activityId: normalized.requestId,
+          activityDetails: normalized.activityDetails
+        });
+      }
 
     } catch (error: any) {
       // Extract clean error message
@@ -415,12 +443,26 @@ export async function bulkCreateWlans(request: BulkWlanCreateRequest): Promise<s
 
       // Normalize and store response data
       const normalized = normalizeMcpResponse(result);
-      operationTracker.updateOperation(sessionId, operationId, {
-        status: 'success',
-        endTime: new Date(),
-        activityId: normalized.requestId,
-        activityDetails: normalized.activityDetails
-      });
+
+      // Check if operation actually failed (MCP returns status: 'failed' without throwing)
+      if (result.status === 'failed' || result.activityDetails?.status === 'FAIL') {
+        const errorMessage = extractErrorMessage(JSON.stringify(result));
+
+        operationTracker.updateOperation(sessionId, operationId, {
+          status: 'failed',
+          endTime: new Date(),
+          error: errorMessage,
+          activityId: normalized.requestId,
+          activityDetails: normalized.activityDetails
+        });
+      } else {
+        operationTracker.updateOperation(sessionId, operationId, {
+          status: 'success',
+          endTime: new Date(),
+          activityId: normalized.requestId,
+          activityDetails: normalized.activityDetails
+        });
+      }
 
     } catch (error: any) {
       // Extract clean error message
@@ -499,12 +541,26 @@ export async function bulkActivateWlans(request: BulkWlanActivateRequest): Promi
 
       // Normalize and store response data
       const normalized = normalizeMcpResponse(result);
-      operationTracker.updateOperation(sessionId, operationId, {
-        status: 'success',
-        endTime: new Date(),
-        activityId: normalized.requestId,
-        activityDetails: normalized.activityDetails
-      });
+
+      // Check if operation actually failed (MCP returns status: 'failed' without throwing)
+      if (result.status === 'failed' || result.activityDetails?.status === 'FAIL') {
+        const errorMessage = extractErrorMessage(JSON.stringify(result));
+
+        operationTracker.updateOperation(sessionId, operationId, {
+          status: 'failed',
+          endTime: new Date(),
+          error: errorMessage,
+          activityId: normalized.requestId,
+          activityDetails: normalized.activityDetails
+        });
+      } else {
+        operationTracker.updateOperation(sessionId, operationId, {
+          status: 'success',
+          endTime: new Date(),
+          activityId: normalized.requestId,
+          activityDetails: normalized.activityDetails
+        });
+      }
 
     } catch (error: any) {
       // Extract clean error message
@@ -582,12 +638,26 @@ export async function bulkDeactivateWlans(request: BulkWlanDeactivateRequest): P
 
       // Normalize and store response data
       const normalized = normalizeMcpResponse(result);
-      operationTracker.updateOperation(sessionId, operationId, {
-        status: 'success',
-        endTime: new Date(),
-        activityId: normalized.requestId,
-        activityDetails: normalized.activityDetails
-      });
+
+      // Check if operation actually failed (MCP returns status: 'failed' without throwing)
+      if (result.status === 'failed' || result.activityDetails?.status === 'FAIL') {
+        const errorMessage = extractErrorMessage(JSON.stringify(result));
+
+        operationTracker.updateOperation(sessionId, operationId, {
+          status: 'failed',
+          endTime: new Date(),
+          error: errorMessage,
+          activityId: normalized.requestId,
+          activityDetails: normalized.activityDetails
+        });
+      } else {
+        operationTracker.updateOperation(sessionId, operationId, {
+          status: 'success',
+          endTime: new Date(),
+          activityId: normalized.requestId,
+          activityDetails: normalized.activityDetails
+        });
+      }
 
     } catch (error: any) {
       // Extract clean error message
@@ -664,12 +734,26 @@ export async function bulkDeleteWlans(request: BulkWlanDeleteRequest): Promise<s
 
       // Normalize and store response data
       const normalized = normalizeMcpResponse(result);
-      operationTracker.updateOperation(sessionId, operationId, {
-        status: 'success',
-        endTime: new Date(),
-        activityId: normalized.requestId,
-        activityDetails: normalized.activityDetails
-      });
+
+      // Check if operation actually failed (MCP returns status: 'failed' without throwing)
+      if (result.status === 'failed' || result.activityDetails?.status === 'FAIL') {
+        const errorMessage = extractErrorMessage(JSON.stringify(result));
+
+        operationTracker.updateOperation(sessionId, operationId, {
+          status: 'failed',
+          endTime: new Date(),
+          error: errorMessage,
+          activityId: normalized.requestId,
+          activityDetails: normalized.activityDetails
+        });
+      } else {
+        operationTracker.updateOperation(sessionId, operationId, {
+          status: 'success',
+          endTime: new Date(),
+          activityId: normalized.requestId,
+          activityDetails: normalized.activityDetails
+        });
+      }
 
     } catch (error: any) {
       // Extract clean error message
@@ -759,12 +843,26 @@ export async function bulkAddAps(request: BulkApAddRequest): Promise<string> {
 
       // Normalize and store response data
       const normalized = normalizeMcpResponse(result);
-      operationTracker.updateOperation(sessionId, operationId, {
-        status: 'success',
-        endTime: new Date(),
-        activityId: normalized.requestId,
-        activityDetails: normalized.activityDetails
-      });
+
+      // Check if operation actually failed (MCP returns status: 'failed' without throwing)
+      if (result.status === 'failed' || result.activityDetails?.status === 'FAIL') {
+        const errorMessage = extractErrorMessage(JSON.stringify(result));
+
+        operationTracker.updateOperation(sessionId, operationId, {
+          status: 'failed',
+          endTime: new Date(),
+          error: errorMessage,
+          activityId: normalized.requestId,
+          activityDetails: normalized.activityDetails
+        });
+      } else {
+        operationTracker.updateOperation(sessionId, operationId, {
+          status: 'success',
+          endTime: new Date(),
+          activityId: normalized.requestId,
+          activityDetails: normalized.activityDetails
+        });
+      }
 
     } catch (error: any) {
       // Extract clean error message
@@ -843,12 +941,26 @@ export async function bulkMoveAps(request: BulkApMoveRequest): Promise<string> {
 
       // Normalize and store response data
       const normalized = normalizeMcpResponse(result);
-      operationTracker.updateOperation(sessionId, operationId, {
-        status: 'success',
-        endTime: new Date(),
-        activityId: normalized.requestId,
-        activityDetails: normalized.activityDetails
-      });
+
+      // Check if operation actually failed (MCP returns status: 'failed' without throwing)
+      if (result.status === 'failed' || result.activityDetails?.status === 'FAIL') {
+        const errorMessage = extractErrorMessage(JSON.stringify(result));
+
+        operationTracker.updateOperation(sessionId, operationId, {
+          status: 'failed',
+          endTime: new Date(),
+          error: errorMessage,
+          activityId: normalized.requestId,
+          activityDetails: normalized.activityDetails
+        });
+      } else {
+        operationTracker.updateOperation(sessionId, operationId, {
+          status: 'success',
+          endTime: new Date(),
+          activityId: normalized.requestId,
+          activityDetails: normalized.activityDetails
+        });
+      }
 
     } catch (error: any) {
       // Extract clean error message
@@ -926,12 +1038,26 @@ export async function bulkRemoveAps(request: BulkApRemoveRequest): Promise<strin
 
       // Normalize and store response data
       const normalized = normalizeMcpResponse(result);
-      operationTracker.updateOperation(sessionId, operationId, {
-        status: 'success',
-        endTime: new Date(),
-        activityId: normalized.requestId,
-        activityDetails: normalized.activityDetails
-      });
+
+      // Check if operation actually failed (MCP returns status: 'failed' without throwing)
+      if (result.status === 'failed' || result.activityDetails?.status === 'FAIL') {
+        const errorMessage = extractErrorMessage(JSON.stringify(result));
+
+        operationTracker.updateOperation(sessionId, operationId, {
+          status: 'failed',
+          endTime: new Date(),
+          error: errorMessage,
+          activityId: normalized.requestId,
+          activityDetails: normalized.activityDetails
+        });
+      } else {
+        operationTracker.updateOperation(sessionId, operationId, {
+          status: 'success',
+          endTime: new Date(),
+          activityId: normalized.requestId,
+          activityDetails: normalized.activityDetails
+        });
+      }
 
     } catch (error: any) {
       // Extract clean error message
@@ -1050,12 +1176,26 @@ export async function bulkCreateGuestPasses(request: BulkGuestPassCreateRequest)
 
       // Normalize and store response data
       const normalized = normalizeMcpResponse(result);
-      operationTracker.updateOperation(sessionId, operationId, {
-        status: 'success',
-        endTime: new Date(),
-        activityId: normalized.requestId,
-        activityDetails: normalized.activityDetails
-      });
+
+      // Check if operation actually failed (MCP returns status: 'failed' without throwing)
+      if (result.status === 'failed' || result.activityDetails?.status === 'FAIL') {
+        const errorMessage = extractErrorMessage(JSON.stringify(result));
+
+        operationTracker.updateOperation(sessionId, operationId, {
+          status: 'failed',
+          endTime: new Date(),
+          error: errorMessage,
+          activityId: normalized.requestId,
+          activityDetails: normalized.activityDetails
+        });
+      } else {
+        operationTracker.updateOperation(sessionId, operationId, {
+          status: 'success',
+          endTime: new Date(),
+          activityId: normalized.requestId,
+          activityDetails: normalized.activityDetails
+        });
+      }
 
     } catch (error: any) {
       // Extract clean error message
@@ -1139,12 +1279,26 @@ export async function bulkDeleteGuestPasses(request: BulkGuestPassDeleteRequest)
 
       // Normalize and store response data
       const normalized = normalizeMcpResponse(result);
-      operationTracker.updateOperation(sessionId, operationId, {
-        status: 'success',
-        endTime: new Date(),
-        activityId: normalized.requestId,
-        activityDetails: normalized.activityDetails
-      });
+
+      // Check if operation actually failed (MCP returns status: 'failed' without throwing)
+      if (result.status === 'failed' || result.activityDetails?.status === 'FAIL') {
+        const errorMessage = extractErrorMessage(JSON.stringify(result));
+
+        operationTracker.updateOperation(sessionId, operationId, {
+          status: 'failed',
+          endTime: new Date(),
+          error: errorMessage,
+          activityId: normalized.requestId,
+          activityDetails: normalized.activityDetails
+        });
+      } else {
+        operationTracker.updateOperation(sessionId, operationId, {
+          status: 'success',
+          endTime: new Date(),
+          activityId: normalized.requestId,
+          activityDetails: normalized.activityDetails
+        });
+      }
 
     } catch (error: any) {
       // Extract clean error message

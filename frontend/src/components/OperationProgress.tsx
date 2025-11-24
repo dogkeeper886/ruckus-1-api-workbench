@@ -304,9 +304,23 @@ export const OperationProgress: React.FC<Props> = ({ sessionId, onComplete }) =>
                 {selectedOperation.error && (
                   <div>
                     <h5 className="font-medium text-red-700 mb-2">Error Message</h5>
-                    <div className="bg-red-50 p-4 rounded text-sm text-red-800">
-                      {selectedOperation.error}
-                    </div>
+                    <pre className="bg-red-50 border border-red-200 p-4 rounded overflow-x-auto text-sm font-mono text-red-800 whitespace-pre-wrap">
+                      {(() => {
+                        // Try to format as JSON for display
+                        try {
+                          const match = selectedOperation.error.match(/Tool (\w+) error:\s*(\{[\s\S]*\})\s*$/);
+                          if (match) {
+                            const toolName = match[1];
+                            const jsonText = match[2];
+                            const parsed = JSON.parse(jsonText);
+                            return `Tool ${toolName} error:\n\n${JSON.stringify(parsed, null, 2)}`;
+                          }
+                          return selectedOperation.error;
+                        } catch (e) {
+                          return selectedOperation.error;
+                        }
+                      })()}
+                    </pre>
                   </div>
                 )}
 

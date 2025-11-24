@@ -109,6 +109,7 @@ class MCPClientService {
     }
 
     const callStartTime = Date.now();
+    let alreadyLogged = false;
 
     try {
       const response = await this.client.callTool({
@@ -143,6 +144,7 @@ class MCPClientService {
           errorMessage: errorText,
         });
 
+        alreadyLogged = true;
         throw new Error(`Tool ${toolName} error:\n${errorText}`);
       }
 
@@ -152,7 +154,7 @@ class MCPClientService {
 
       if (!textContent) {
         console.error(`[MCP Client] WARNING: No text content in response from ${toolName}`);
-        
+
         // Log warning to tracker
         apiLogTracker.addLog({
           timestamp: new Date(),
@@ -163,7 +165,8 @@ class MCPClientService {
           status: 'error',
           errorMessage: 'No text content in response',
         });
-        
+
+        alreadyLogged = true;
         return null;
       }
 
@@ -174,7 +177,7 @@ class MCPClientService {
         // If not JSON, return as-is
         parsed = textContent;
       }
-      
+
       // Log success to tracker
       apiLogTracker.addLog({
         timestamp: new Date(),
@@ -184,22 +187,24 @@ class MCPClientService {
         duration,
         status: 'success',
       });
-      
+
       return parsed;
     } catch (error: any) {
       const duration = Date.now() - callStartTime;
-      
-      // Log error to tracker
-      apiLogTracker.addLog({
-        timestamp: new Date(),
-        toolName,
-        requestData: args,
-        responseData: null,
-        duration,
-        status: 'error',
-        errorMessage: error.message || 'Unknown error',
-      });
-      
+
+      // Only log if we haven't already logged this error
+      if (!alreadyLogged) {
+        apiLogTracker.addLog({
+          timestamp: new Date(),
+          toolName,
+          requestData: args,
+          responseData: null,
+          duration,
+          status: 'error',
+          errorMessage: error.message || 'Unknown error',
+        });
+      }
+
       throw error;
     }
   }
