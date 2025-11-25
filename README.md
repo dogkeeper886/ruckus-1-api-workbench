@@ -28,12 +28,14 @@ ruckus-1-api-workbench/
 │   ├── src/
 │   │   ├── components/  # Forms and progress display
 │   │   └── services/    # API client
-└── shared/            # Shared TypeScript types
+├── shared/            # Shared TypeScript types
+└── ruckus1-mcp/       # RUCKUS One MCP server (external dependency)
 ```
 
 ## Prerequisites
 
 - Node.js 18+ and npm
+- Git (for cloning dependencies)
 - RUCKUS One account with API credentials
   - Tenant ID
   - Client ID
@@ -41,27 +43,45 @@ ruckus-1-api-workbench/
 
 ## Quick Start
 
-### Option A: Automated Setup (Recommended)
+### 1. Clone the RUCKUS1 MCP Dependency
+
+The backend requires the RUCKUS1 MCP server to communicate with the RUCKUS One API:
 
 ```bash
-# Make setup script executable
-chmod +x setup.sh
-
-# Run automated setup
-./setup.sh
+# Clone the ruckus1-mcp repository to the project root
+git clone https://github.com/dogkeeper886/ruckus1-mcp
 ```
 
-This will:
-- Install backend dependencies
-- Install frontend dependencies
-- Create `.env` template
-- Build backend TypeScript
+This will create a `ruckus1-mcp/` directory in the project root, which is automatically used by the backend.
 
-Then configure your credentials:
+### 2. Install Dependencies
 
 ```bash
-# Edit backend/.env
-nano backend/.env
+# Install backend dependencies
+cd backend
+npm install
+
+# Build backend TypeScript
+npm run build
+cd ..
+
+# Install frontend dependencies
+cd frontend
+npm install
+cd ..
+```
+
+### 3. Configure RUCKUS One Credentials
+
+Create and configure the `.env` file:
+
+```bash
+# Create .env file in backend directory
+cd backend
+cp .env.example .env
+
+# Edit .env with your credentials
+nano .env
 ```
 
 Add your RUCKUS One credentials:
@@ -75,7 +95,7 @@ PORT=3003
 
 Save and exit (Ctrl+X, Y, Enter)
 
-**Start Services with Makefile:**
+### 4. Start Services with Makefile
 
 ```bash
 # Clean up any old processes and start backend
@@ -92,62 +112,10 @@ make frontend
 - `make help` - Show all available commands
 - `make clean` - Kill old processes on ports 3003/3002
 - `make status` - Show running services
-- `make backend` - Clean + start backend
-- `make frontend` - Start frontend  
+- `make backend` - Clean + start backend (auto-starts MCP server)
+- `make frontend` - Start frontend
 - `make dev` - Start both (parallel)
 - `make stop` - Stop all services
-
-### Option B: Manual Setup
-
-#### 1. Backend Setup
-
-```bash
-cd backend
-
-# Install dependencies
-npm install
-
-# Create .env file
-cp .env.example .env
-
-# Edit .env with your credentials
-nano .env
-```
-
-Configure `.env`:
-```bash
-RUCKUS_TENANT_ID=your-tenant-id
-RUCKUS_CLIENT_ID=your-client-id
-RUCKUS_CLIENT_SECRET=your-client-secret
-RUCKUS_REGION=us              # Optional: us, eu, asia (leave blank for global)
-PORT=3003
-```
-
-```bash
-# Build TypeScript
-npm run build
-
-# Start backend server
-npm run dev
-```
-
-Backend will run on `http://localhost:3003`
-
-#### 2. Frontend Setup
-
-Open a new terminal:
-
-```bash
-cd frontend
-
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
-```
-
-Frontend will run on `http://localhost:3002`
 
 ### Access the Application
 
@@ -369,6 +337,20 @@ make clean
 # Or manually check and kill
 make status
 ```
+
+### Missing ruckus1-mcp Directory
+
+If you see errors about missing MCP server files:
+
+```bash
+# Ensure ruckus1-mcp is cloned in project root
+ls ruckus1-mcp/
+
+# If missing, clone it:
+git clone https://github.com/dogkeeper886/ruckus1-mcp
+```
+
+The backend expects `ruckus1-mcp/src/mcpServer.ts` to exist in the project root.
 
 ### Backend Won't Start
 
