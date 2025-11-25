@@ -57,12 +57,14 @@ This will create a `ruckus1-mcp/` directory in the project root, which is automa
 ### 2. Install Dependencies
 
 ```bash
+# Install MCP server dependencies (REQUIRED)
+cd ruckus1-mcp
+npm install
+cd ..
+
 # Install backend dependencies
 cd backend
 npm install
-
-# Build backend TypeScript
-npm run build
 cd ..
 
 # Install frontend dependencies
@@ -95,7 +97,16 @@ PORT=3003
 
 Save and exit (Ctrl+X, Y, Enter)
 
-### 4. Start Services with Makefile
+### 4. Build Backend
+
+```bash
+# Build backend TypeScript from project root
+cd backend
+npm run build
+cd ..
+```
+
+### 5. Start Services
 
 ```bash
 # Clean up any old processes and start backend
@@ -117,7 +128,7 @@ make frontend
 - `make dev` - Start both (parallel)
 - `make stop` - Stop all services
 
-### Access the Application
+### 6. Access the Application
 
 Open your browser and navigate to:
 ```
@@ -352,7 +363,25 @@ git clone https://github.com/dogkeeper886/ruckus1-mcp
 
 The backend expects `ruckus1-mcp/src/mcpServer.ts` to exist in the project root.
 
+### MCP Server Won't Start
+
+**TypeScript compilation errors** (Cannot find module '@modelcontextprotocol/sdk', 'axios', 'dotenv', etc.):
+
+```bash
+# Reinstall MCP server dependencies
+cd ruckus1-mcp
+rm -rf node_modules package-lock.json
+npm install
+cd ..
+```
+
+This is the most common issue - the MCP server requires its own dependencies to be installed separately.
+
 ### Backend Won't Start
+
+**First, check if it's an MCP server issue** - see "MCP Server Won't Start" section above.
+
+If the MCP server is working, check the backend:
 
 ```bash
 # Check Node.js version (should be 18+)
@@ -361,11 +390,12 @@ node -v
 # Clean up old processes first
 make clean
 
-# Reinstall dependencies if needed
+# Reinstall backend dependencies if needed
 cd backend
 rm -rf node_modules package-lock.json
 npm install
 npm run build
+cd ..
 ```
 
 **Connection refused:**
@@ -386,10 +416,13 @@ npm run dev
 
 ### Frontend Won't Start
 
+**Reinstall frontend dependencies:**
+
 ```bash
 cd frontend
 rm -rf node_modules package-lock.json
 npm install
+cd ..
 ```
 
 **API calls fail:**
