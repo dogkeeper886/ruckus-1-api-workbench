@@ -17,7 +17,6 @@ import {
   BulkOperationSession,
   Venue,
   WifiNetwork,
-  AccessPoint,
   GuestPass,
   ApiLogEntry
 } from '../../../shared/types';

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { apiService } from '../services/api';
 import { BulkOperationProgress, BulkOperationSession, Operation } from '../../../shared/types';
 

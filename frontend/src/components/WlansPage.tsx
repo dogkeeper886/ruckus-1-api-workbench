@@ -203,12 +203,21 @@ export const WlansPage: React.FC = () => {
       // Build venue configs for each selected venue
       const venueConfigs = Array.from(selectedVenueIds).map(venueId => ({
         venueId,
+        isAllApGroups: true,
+        allApGroupsRadio: 'Both',
+        allApGroupsRadioTypes: ['2.4-GHz', '5-GHz'],
         scheduler: { type: 'ALWAYS_ON' }
       }));
+
+      // Find portalServiceProfileId from selected guest networks
+      const selectedNetworks = wlans.filter(w => selectedNetworkIds.has(w.id));
+      const guestNetwork = selectedNetworks.find(w => w.type === 'guest' || w.nwSubType === 'guest');
+      const portalServiceProfileId = guestNetwork?.portalServiceProfileId;
 
       const request = {
         networkIds: Array.from(selectedNetworkIds),
         venueConfigs,
+        ...(portalServiceProfileId && { portalServiceProfileId }),
         options: {
           maxConcurrent: activateMaxConcurrent,
           delayMs: activateDelayMs

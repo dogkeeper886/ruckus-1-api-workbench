@@ -52,17 +52,13 @@ export const ApiLogsPanel: React.FC = () => {
 
   const formatTimestamp = (timestamp: Date) => {
     const date = new Date(timestamp);
-    return date.toLocaleTimeString('en-US', { 
+    return date.toLocaleTimeString('en-US', {
       hour12: false,
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit',
       fractionalSecondDigits: 3
-    });
-  };
-
-  const getStatusColor = (status: string) => {
-    return status === 'success' ? 'text-green-600' : 'text-red-600';
+    } as Intl.DateTimeFormatOptions);
   };
 
   const getStatusBadge = (status: string) => {
@@ -221,13 +217,14 @@ export const ApiLogsPanel: React.FC = () => {
                                     <button
                                       onClick={() => {
                                         // Try to format as JSON, otherwise copy as-is
+                                        const errorMsg = log.errorMessage || '';
                                         try {
-                                          const match = log.errorMessage.match(/Tool \w+ error:\s*(\{[\s\S]*\})\s*$/);
-                                          const jsonText = match ? match[1] : log.errorMessage;
+                                          const match = errorMsg.match(/Tool \w+ error:\s*(\{[\s\S]*\})\s*$/);
+                                          const jsonText = match ? match[1] : errorMsg;
                                           const parsed = JSON.parse(jsonText);
                                           copyToClipboard(JSON.stringify(parsed, null, 2));
                                         } catch (e) {
-                                          copyToClipboard(log.errorMessage);
+                                          copyToClipboard(errorMsg);
                                         }
                                       }}
                                       className="text-xs px-3 py-1 bg-white border border-gray-300 hover:bg-gray-100 rounded transition-colors"
