@@ -137,7 +137,8 @@ export const BulkGuestPassForm: React.FC<Props> = ({ onComplete }) => {
       )}
 
       <form onSubmit={handleCreateSubmit} className="space-y-6">
-        <div className="bg-white rounded-lg shadow-medium p-6">
+        {/* Guest Pass Network - Blue for target selection */}
+        <div className="bg-gradient-to-b from-blue-50 to-white rounded-lg shadow-small border border-blue-100 p-6">
           <h3 className="text-lg font-semibold mb-4">Guest Pass Network</h3>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -164,7 +165,8 @@ export const BulkGuestPassForm: React.FC<Props> = ({ onComplete }) => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-medium p-6">
+        {/* Naming Pattern - Blue for primary data */}
+        <div className="bg-gradient-to-b from-blue-50 to-white rounded-lg shadow-small border border-blue-100 p-6">
           <h3 className="text-lg font-semibold mb-4">Naming Pattern</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
@@ -208,7 +210,8 @@ export const BulkGuestPassForm: React.FC<Props> = ({ onComplete }) => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-medium p-6">
+        {/* Credential Settings - Blue for primary data */}
+        <div className="bg-gradient-to-b from-blue-50 to-white rounded-lg shadow-small border border-blue-100 p-6">
           <h3 className="text-lg font-semibold mb-4">Credential Settings</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -269,7 +272,8 @@ export const BulkGuestPassForm: React.FC<Props> = ({ onComplete }) => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-medium p-6">
+        {/* Operation Options - Gray for configuration */}
+        <div className="bg-gradient-to-b from-gray-50 to-white rounded-lg shadow-small border border-gray-200 p-6">
           <h3 className="text-lg font-semibold mb-4">Operation Options</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>

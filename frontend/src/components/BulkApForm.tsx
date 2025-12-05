@@ -167,8 +167,8 @@ export const BulkApForm: React.FC<Props> = ({ onComplete }) => {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Venue and AP Group Selection */}
-        <div className="bg-white rounded-lg shadow-medium p-6">
+        {/* Venue and AP Group Selection - Blue for primary target selection */}
+        <div className="bg-gradient-to-b from-blue-50 to-white rounded-lg shadow-small border border-blue-100 p-6">
           <h3 className="text-lg font-semibold mb-4">Target Location</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -226,8 +226,8 @@ export const BulkApForm: React.FC<Props> = ({ onComplete }) => {
           )}
         </div>
 
-        {/* Naming Pattern */}
-        <div className="bg-white rounded-lg shadow-medium p-6">
+        {/* Naming Pattern - Blue for primary data */}
+        <div className="bg-gradient-to-b from-blue-50 to-white rounded-lg shadow-small border border-blue-100 p-6">
           <h3 className="text-lg font-semibold mb-4">Naming Pattern</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
@@ -277,8 +277,8 @@ export const BulkApForm: React.FC<Props> = ({ onComplete }) => {
           </div>
         </div>
 
-        {/* Serial Number Pattern */}
-        <div className="bg-white rounded-lg shadow-medium p-6">
+        {/* Serial Number Pattern - Blue for primary data */}
+        <div className="bg-gradient-to-b from-blue-50 to-white rounded-lg shadow-small border border-blue-100 p-6">
           <h3 className="text-lg font-semibold mb-4">Serial Number Pattern</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -317,8 +317,8 @@ export const BulkApForm: React.FC<Props> = ({ onComplete }) => {
           </div>
         </div>
 
-        {/* Operation Options */}
-        <div className="bg-white rounded-lg shadow-medium p-6">
+        {/* Operation Options - Gray for configuration */}
+        <div className="bg-gradient-to-b from-gray-50 to-white rounded-lg shadow-small border border-gray-200 p-6">
           <h3 className="text-lg font-semibold mb-4">Operation Options</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>

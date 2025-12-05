@@ -98,7 +98,8 @@ export const BulkVenueForm: React.FC<Props> = ({ onComplete }) => {
       )}
 
       <form onSubmit={handleCreateSubmit} className="space-y-6">
-          <div className="bg-white rounded-lg shadow-medium p-6">
+          {/* Naming Pattern - Blue for primary create data */}
+          <div className="bg-gradient-to-b from-blue-50 to-white rounded-lg shadow-small border border-blue-100 p-6">
             <h3 className="text-lg font-semibold mb-4">Naming Pattern</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div>
@@ -142,7 +143,8 @@ export const BulkVenueForm: React.FC<Props> = ({ onComplete }) => {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-medium p-6">
+          {/* Venue Details - Blue for primary create data */}
+          <div className="bg-gradient-to-b from-blue-50 to-white rounded-lg shadow-small border border-blue-100 p-6">
             <h3 className="text-lg font-semibold mb-4">Venue Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -187,7 +189,8 @@ export const BulkVenueForm: React.FC<Props> = ({ onComplete }) => {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-medium p-6">
+          {/* Operation Options - Gray for configuration */}
+          <div className="bg-gradient-to-b from-gray-50 to-white rounded-lg shadow-small border border-gray-200 p-6">
             <h3 className="text-lg font-semibold mb-4">Operation Options</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>

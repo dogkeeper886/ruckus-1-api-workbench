@@ -187,6 +187,15 @@ export const WlansPage: React.FC = () => {
     setSelectedVenueIds(newSelection);
   };
 
+  const handleSelectAllVenues = () => {
+    const activatableVenues = getActivatableVenues();
+    if (selectedVenueIds.size === activatableVenues.length) {
+      setSelectedVenueIds(new Set());
+    } else {
+      setSelectedVenueIds(new Set(activatableVenues.map(v => v.id)));
+    }
+  };
+
   const handleCancelActivate = () => {
     setShowActivateDialog(false);
     setSelectedVenueIds(new Set());
@@ -269,6 +278,15 @@ export const WlansPage: React.FC = () => {
       newSelection.add(venueId);
     }
     setDeactivateVenueIds(newSelection);
+  };
+
+  const handleSelectAllDeactivateVenues = () => {
+    const deactivatableVenues = getDeactivatableVenues();
+    if (deactivateVenueIds.size === deactivatableVenues.length) {
+      setDeactivateVenueIds(new Set());
+    } else {
+      setDeactivateVenueIds(new Set(deactivatableVenues.map(v => v.id)));
+    }
   };
 
   const handleCancelDeactivate = () => {
@@ -633,6 +651,18 @@ export const WlansPage: React.FC = () => {
                       </div>
                     ) : (
                       <div className="divide-y divide-gray-200">
+                        {/* Select All Row */}
+                        <label
+                          className="flex items-center px-3 py-2.5 bg-gray-50 hover:bg-blue-50 cursor-pointer transition-colors sticky top-0 border-b border-gray-300"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selectedVenueIds.size === getActivatableVenues().length && getActivatableVenues().length > 0}
+                            onChange={handleSelectAllVenues}
+                            className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-2 focus:ring-blue-500 mr-3"
+                          />
+                          <span className="text-sm font-medium text-gray-700">Select All</span>
+                        </label>
                         {getActivatableVenues().map(venue => (
                           <label
                             key={venue.id}
@@ -770,6 +800,18 @@ export const WlansPage: React.FC = () => {
                       </div>
                     ) : (
                       <div className="divide-y divide-gray-200">
+                        {/* Select All Row */}
+                        <label
+                          className="flex items-center px-3 py-2.5 bg-gray-50 hover:bg-yellow-50 cursor-pointer transition-colors sticky top-0 border-b border-gray-300"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={deactivateVenueIds.size === getDeactivatableVenues().length && getDeactivatableVenues().length > 0}
+                            onChange={handleSelectAllDeactivateVenues}
+                            className="h-4 w-4 text-yellow-600 rounded border-gray-300 focus:ring-2 focus:ring-yellow-500 mr-3"
+                          />
+                          <span className="text-sm font-medium text-gray-700">Select All</span>
+                        </label>
                         {getDeactivatableVenues().map(venue => (
                           <label
                             key={venue.id}
