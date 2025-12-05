@@ -28,44 +28,44 @@ function App() {
             </div>
           </div>
           
-          {/* Tab Navigation */}
-          <div className="flex gap-4 mt-6 border-b border-gray-200">
+          {/* Tab Navigation - Light pill style */}
+          <div className="flex gap-1 mt-6 p-1 bg-gray-100/80 rounded-lg w-fit border border-gray-200/50">
             <Link
               to="/venues"
-              className={`px-4 py-2 font-medium transition-colors ${
+              className={`px-4 py-2 font-medium rounded-md transition-all duration-200 ${
                 location.pathname === '/venues'
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-white text-blue-600 shadow-small'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-white/60'
               }`}
             >
               Venues
             </Link>
             <Link
               to="/access-points"
-              className={`px-4 py-2 font-medium transition-colors ${
+              className={`px-4 py-2 font-medium rounded-md transition-all duration-200 ${
                 location.pathname === '/access-points'
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-white text-blue-600 shadow-small'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-white/60'
               }`}
             >
               Access Points
             </Link>
             <Link
               to="/wifi-networks"
-              className={`px-4 py-2 font-medium transition-colors ${
+              className={`px-4 py-2 font-medium rounded-md transition-all duration-200 ${
                 location.pathname === '/wifi-networks'
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-white text-blue-600 shadow-small'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-white/60'
               }`}
             >
               WiFi Networks
             </Link>
             <Link
               to="/guest-passes"
-              className={`px-4 py-2 font-medium transition-colors ${
+              className={`px-4 py-2 font-medium rounded-md transition-all duration-200 ${
                 location.pathname === '/guest-passes'
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-white text-blue-600 shadow-small'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-white/60'
               }`}
             >
               Guest Passes

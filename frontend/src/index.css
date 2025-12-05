@@ -327,7 +327,9 @@
   }
 
   .card-header {
-    @apply px-6 py-4 border-b border-gray-200 bg-gray-50;
+    @apply px-6 py-4 border-b border-gray-200;
+    /* White background (inherits from card) for elevated interactive headers */
+    /* Use .table-header for recessed column headers */
   }
 
   .card-body {

@@ -180,7 +180,7 @@ export const OperationProgress: React.FC<Props> = ({ sessionId, onComplete }) =>
 
       {/* Operations Table */}
       <div className="bg-white rounded-lg shadow-medium border border-gray-200">
-        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+        <div className="px-6 py-4 border-b border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900">Operations</h3>
         </div>
         <div className="overflow-x-auto max-h-96">

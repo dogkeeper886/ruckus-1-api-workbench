@@ -334,7 +334,7 @@ export const GuestPassesPage: React.FC = () => {
       {/* Guest Passes Table */}
       {!isLoading && !error && (
         <div className="bg-white rounded-lg shadow-small border border-gray-200 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+          <div className="px-6 py-4 border-b border-gray-200">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-bold text-gray-900">
                 All Guest Passes ({guestPasses.length})
