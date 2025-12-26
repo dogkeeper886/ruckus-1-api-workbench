@@ -1,0 +1,49 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build outputs (we build in Docker)
+dist/
+**/dist/
+build/
+**/build/
+
+# Environment files (pass via docker-compose)
+.env
+.env.*
+**/.env
+**/.env.*
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Testing
+coverage/
+**/*.test.ts
+**/*.spec.ts
+**/tests/
+**/__tests__/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+.cache/
+.temp/
+tmp/
+
+# Claude/plans
+.claude/

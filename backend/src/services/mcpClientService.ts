@@ -44,22 +44,38 @@ class MCPClientService {
       }
     );
 
-    // Create StdioClientTransport with absolute path
-    const projectRoot = path.resolve(__dirname, '../../../');
-    const mcpServerPath = path.join(projectRoot, 'ruckus1-mcp/src/mcpServer.ts');
-    
-    console.log('[MCP Client] Project root:', projectRoot);
-    console.log('[MCP Client] MCP server path:', mcpServerPath);
-    console.log('[MCP Client] Command: npx ts-node', mcpServerPath);
+    // Determine MCP server path based on environment
+    const isProduction = process.env.NODE_ENV === 'production';
+    let mcpCommand: string;
+    let mcpArgs: string[];
+
+    if (isProduction) {
+      // In production Docker, MCP server is at /app/mcp/dist/mcpServer.js
+      mcpCommand = 'node';
+      mcpArgs = ['/app/mcp/dist/mcpServer.js'];
+      console.log('[MCP Client] Production mode: using compiled MCP server');
+      console.log('[MCP Client] Command:', mcpCommand, mcpArgs.join(' '));
+    } else {
+      // In development, use ts-node with source files
+      const projectRoot = path.resolve(__dirname, '../../../');
+      const mcpServerPath = path.join(projectRoot, 'ruckus1-mcp/src/mcpServer.ts');
+      mcpCommand = 'npx';
+      mcpArgs = ['ts-node', mcpServerPath];
+      console.log('[MCP Client] Development mode: using ts-node');
+      console.log('[MCP Client] Project root:', projectRoot);
+      console.log('[MCP Client] MCP server path:', mcpServerPath);
+    }
+
     console.log('[MCP Client] Environment:');
+    console.log('  - NODE_ENV:', process.env.NODE_ENV || 'development');
     console.log('  - RUCKUS_TENANT_ID:', process.env.RUCKUS_TENANT_ID ? '✓ Set' : '✗ Not set');
     console.log('  - RUCKUS_CLIENT_ID:', process.env.RUCKUS_CLIENT_ID ? '✓ Set' : '✗ Not set');
     console.log('  - RUCKUS_CLIENT_SECRET:', process.env.RUCKUS_CLIENT_SECRET ? '✓ Set' : '✗ Not set');
     console.log('  - RUCKUS_REGION:', process.env.RUCKUS_REGION || 'global (default)');
 
     this.transport = new StdioClientTransport({
-      command: 'npx',
-      args: ['ts-node', mcpServerPath],
+      command: mcpCommand,
+      args: mcpArgs,
       env: {
         ...process.env,
         RUCKUS_TENANT_ID: process.env.RUCKUS_TENANT_ID || '',
