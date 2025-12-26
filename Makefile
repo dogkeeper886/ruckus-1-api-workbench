@@ -1,3 +1,8 @@
+# RUCKUS 1 API Workbench - Local Development
+#
+# Local dev:   make dev (ports 3002, 3003)
+# Docker:      docker-compose up (port 8080)
+
 .PHONY: clean backend frontend dev stop help status
 
 help:
